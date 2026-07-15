@@ -1,4 +1,4 @@
-# Grammar Action
+# Action
 
 A grammar action (or simply action) is the definition of a parsing action. It can be a character parser or a token parser or both. The type the action is resolved as is determined by the generator at compile time (the process of generation) and based on the output structure defined by the user.
 
@@ -33,8 +33,6 @@ animal = dog / cat
 ```
 
 The difference between the last 2 examples is `|` *OR* and `/` *Firstly OR*. In the case of *OR* all cases are checked regardless of any being successful. While in the case of *Firstly OR* all checks stop on the *first* successful case. So in the example `animal = dog | cat`, even if dog successfully parses the text, the parser will still check if cat parses. While in the case of `animal = dog / cat`, cat will only be checked if dog failed to parse.
-
-## Jargon
 
 An action can be considered to be containing *series* and *options*.
 

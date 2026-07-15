@@ -6,9 +6,8 @@
 Algodal Text Parser Generator documentation
 ===========================================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+A Powerful text parser generator for quick and easy parser implementations for your projects.
+Get it here: https://algodal.itch.io/algodal-parser-generator-tool
 
 
 .. toctree::
@@ -18,3 +17,10 @@ documentation for details.
    overview
    language
    action
+   operator
+   function
+   lexer
+   analyzer
+   other
+   error
+   sample
