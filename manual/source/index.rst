@@ -11,16 +11,24 @@ Get it here: https://algodal.itch.io/algodal-parser-generator-tool
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    overview
    language
-   action
-   operator
-   function
-   lexer
-   analyzer
-   other
-   error
-   sample
+   character
+   counter
+   builtin_action
+   inbetween
+   parser
+   abstract_syntax_tree
+   alias
+   variable
+   permutation
+   if_statement
+   text_function
+   parser_result_function
+   binding_power
+   custom_action
+   config_settings
+   samples

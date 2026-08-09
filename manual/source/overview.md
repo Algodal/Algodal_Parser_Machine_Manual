@@ -1,4 +1,4 @@
-# Algodal Text Parser Generator
+# Overview
 Version 0.1.0
 Released July 7, 2026
 
