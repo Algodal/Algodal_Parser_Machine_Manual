@@ -1,6 +1,6 @@
 # Language 
 
-Parsers a written in a language called the Algodal Text Parser Generator Language (ATPGL). The language has a similar *EBNF* like syntax for defining grammar actions (simply called actions). It also has special syntaxes for defining lexers, analyzers and generating a token list and abstract syntax tree.
+Parsers are written in a language called the **Algodal Parser Machine Language (APML)**. The language uses an *EBNF*-like syntax for defining grammar actions (simply called *actions*). It also has special syntaxes for defining lexers and analyzers, and for generating a token list and an abstract syntax tree.
 
 Here is a sample syntax for a basic parser:
 
@@ -27,39 +27,44 @@ You can create line comments with `#` symbol.
 
 ## Action
 
-An action is the definition of a parsing action. It can be a character parser or a token parser or both. The type the action is resolved as is determined by the generator at compile time (the process of generation) and based on the output structure defined by the user.
+An action is the definition of a parsing action. Actions parse blocks of character sequences (charseq for short) and structures of syntactic nodes (syntac for short) which are like an AST. A charseq action is defined using `=` while a syntac action is defined using `:=`. It is the same grammar regardless of it being a charseq or syntac grammar - the only difference is that one results in a block of character sequence while the other results structured tree.
 
 In below example, we defined an action called animal and it parses for an exact match for the string *"cat"*.
 
 ```parser
-animal = "cat"
+animal_simple  = "cat" # charseq
+animal_detail := "c" "a" "t" # syntac
 ```
 
 In the next example, we defined 3 actions: dog parsers for exactly "dog", cat parses for exactly "cat" and animal parses for actions *dog* followed by *cat* which is equivalent to *`animal = "dog" "cat"`*.
 
 ```parser
-dog = "dog"
-cat = "cat"
-animal = dog cat
+dog     = "dog"
+cat     = "cat"
+animal := dog cat
 ```
 
 In this example, it is similar to the previous example except that animal parses for the action *dog* *OR* the action *cat*.
 
 ```parser
-dog = "dog"
-cat = "cat"
-animal = dog | cat
+dog     = "dog"
+cat     = "cat"
+animal := dog | cat
 ```
 
 This example is the same except animal parses for the action *dog* *OR* the action *cat* *whichever first*.
 
 ```parser
-dog = "dog"
-cat = "cat"
-animal = dog / cat
+dog     = "dog"
+cat     = "cat"
+animal := dog / cat
 ```
 
-The difference between the last 2 examples is `|` *OR* and `/` *Firstly OR*. In the case of *OR* all cases are checked regardless of any being successful. While in the case of *Firstly OR* all checks stop on the *first* successful case. So in the example `animal = dog | cat`, even if dog successfully parses the text, the parser will still check if cat parses. While in the case of `animal = dog / cat`, cat will only be checked if dog failed to parse.
+The difference between the last 2 examples is `|` (*OR*) and `/` (*Firstly OR*). With *OR*, every case is checked regardless of whether an earlier one succeeded. With *Firstly OR*, checking stops at the *first* successful case. So in `animal := dog | cat`, even if `dog` parses the text successfully, the parser still checks `cat`. In `animal := dog / cat`, `cat` is only checked if `dog` fails to parse.
+
+:::{tip}
+Reach for `/` (*Firstly OR*) when the order of alternatives matters or you want to stop at the first match — it is usually what you want and avoids redundant checks. Use `|` (*OR*) when every alternative must be considered.
+:::
 
 An action can be considered to be containing *series* and *options*.
 
@@ -105,42 +110,52 @@ act = (A B (C | D) E | F (G) H)
 
 A character sequence is a block of sequential characters parsed from an incoming text. It is generated in the lexing phase and is the building block of the Abstract Syntax Tree (AST). A character sequence that is saved in an AST is also known as a token.
 
-Actions that generate AST are defined with `=`.
+Actions that generate charseq are defined with `=`.
 
-```
+```parser
 number = <0:9>+;
 ```
 
 ## Syntactic Object
-A syntactic object or syntactic node (or syntac for short) is either character sequence block (token) or a syntac block that is in a AST.
+A syntactic object or syntactic node or abstract syntax tree node is either a charseq or a syntac (reversive in nature) in an AST tree.
 
-## Syntact Block
-A syntactic block (or symply a syntac block) is a sub AST block.
+Actions that generate syntac are defined with `:=`.
 
-Actions that generate syntac block are defined with `:=`.
-
-```
+```parser
 prog := "A" number;
 ```
 
 ## Types
 
-There are 3 types of ATPG. **Parser type**, **Number type** and **Text type**. 
+There are 4 types in APML: **Text type**, **Number type**, **Parser type** and **Semantic Type**.
 
-Parser type is a built-in type that captures the result of the parsing. It can be converted to Text type or Number type.
+Text type holds text - a sequence of characters.
 
-Number type is 0 or positive numbers. Negative numbers are not supported.
+Number type is 0 or positive numbers; negative numbers are not supported.
 
-Text type hold text; a sequence of characters. More on types in later chapters.
+Parser type holds the result of the parsing. It can be automatically converted to Text type or Number type.
 
-### Text
+Semantic type is a special operating type that holds a **set** of parser types. That set can be applied like an **option** of text matches in grammar.
+
+
+:::{seealso}
+Each of these types has a corresponding variable keyword (`parval`, `numval`, `texval`). See [Variables](variable.md).
+:::
+
+## Text
 
 When we say "text" we may be referring to a text used for parsing or an incoming text. Incoming text is the actual content that we are parsing to convert into AST. The parsing text is any grammar or parameters we used.
 
-### Semantic Type
 
-Semantic type is a special type that holds a **set** of parser types. Used for storing a set of parsed results and then applying them to grammar. More on semantic types in later chapters.
+
+:::{seealso}
+The semantic type is used through the `semval` variable keyword. See [Variables](variable.md).
+:::
 
 ## Range
 
-Range is a special subfeature used in other features that specify a starting position and a ending position and the application being the application of the effect across the entire range. It uses the symbol ":". More on ranges in later chapters.
+Range is a special subfeature used within other features. It specifies a starting position and an ending position, and applies an effect across the entire range. It uses the symbol `:`. More on ranges in later chapters.
+
+:::{seealso}
+Range appears in [Character](character.md) literals and blocks, [Counter](counter.md) repetitions, and [Parser Result Function](parser_result_function.md) sectioning with `::part`.
+:::

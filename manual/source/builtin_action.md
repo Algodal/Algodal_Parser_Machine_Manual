@@ -1,6 +1,6 @@
 # Built-in Action
 
-Some action are so common that ATPG build them in for quick and easy use.
+Some actions are so common that APM builds them in for quick and easy use.
 
 | Action | Grammar |
 | :--- | ---: |

@@ -8,7 +8,7 @@
 
 
 
-```
+```parser
 A = tex::order("ABC"); # similar to perm for syntactic objects
 B = tex::oneof("ABC"); # a single character from the text
 C = tex::icase("ABC"); # exact but with any case

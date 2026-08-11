@@ -3,10 +3,17 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+# Make this source directory importable so the local "parser_lexer" extension
+# (source/parser_lexer.py) can be found.
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath("."))
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "Algodal Text Parser Generator"
+project = "Algodal Parser Machine"
 copyright = "2026, Alrick Grandison"
 author = "Alrick Grandison"
 release = "August 2026"
@@ -14,7 +21,14 @@ release = "August 2026"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["myst_parser", "sphinx_design", "sphinxcontrib.mermaid"]
+# "parser_lexer" is a local module (source/parser_lexer.py) that registers the
+# APML syntax highlighter used by ```parser code blocks.
+extensions = [
+    "myst_parser",
+    "sphinx_design",
+    "sphinxcontrib.mermaid",
+    "parser_lexer",
+]
 
 myst_enable_extensions = [
     "colon_fence",  # ::: blocks (admonitions)
