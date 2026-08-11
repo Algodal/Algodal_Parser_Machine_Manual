@@ -1,8 +1,8 @@
 # IF statement
 
-The IF statement allows you to branch parsing.
+The IF statement lets you branch the parsing based on a condition or on whether an action parses.
 
-```
+```parser
 numval x = 0
 
 A = char >> x; # auto-conversion to numval

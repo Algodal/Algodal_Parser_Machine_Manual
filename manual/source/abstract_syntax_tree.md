@@ -1,18 +1,18 @@
 # Abstract Syntax Tree
 
-Abstract Syntax Tree (AST) is generated automatically. However, the AST can be customized. AST customization is only possible with syntac actions. To customize AST, the grammar on the left must be wrapped in `()` and `->` maps to the `AST` block which is contained in `()`.
+The Abstract Syntax Tree (AST) is generated automatically. However, it can be customized. AST customization is only possible with syntac actions. To customize the AST, wrap the grammar on the left in `()`, then use `->` to map it to the `AST` block, which is also contained in `()`.
 
 ## AST Rule
 
 AST block:
 
-```
-A B # A and B are sibling
+```parser
+A B # A and B are siblings
 A (B) # A is parent of B
 ```
 
-Grammar-AST syntax
-```
+Grammar-AST syntax:
+```parser
 (A B) -> (A B) # A and B are sibling
 (A+ B+) -> (A B) # A... and B... are sibling; U... means U and each additional U added as sibling to the previous U
 (A* B*) -> (A B) # A... and B... are sibling; U... means U and each additional U added as sibling to the previous U if exists
@@ -25,13 +25,13 @@ Grammar-AST syntax
 # labels only apply to the current grammar-ast customization
 ```
 
-```
+```parser
 name = <A:Z>+;
 number = <0:9>+;
 stmt := (name number) -> (number name);
 
 parser {
-    (spc|nl) -> (); no AST generated; essentially discarded
+    (spc|nl) -> (); # no AST generated; essentially discarded
     stmt;
 }
 ```

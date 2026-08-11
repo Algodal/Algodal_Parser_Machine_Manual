@@ -229,7 +229,7 @@ t2 = name::subkind("Fr"); # checks if result has substring called "Fr"
 t3a = name::part(1); # section the result; returns first character; 1 index based
 t3b = name::part(1:4); # section the result; returns first to fourth character
 t3c = name::part(2+); # section the result; returns second to last character
-t3d = name::part(1)::is(0x20); # chain functions
+t3d = name::part(1)::is(\x20); # chain functions
 t3e = name::part(3:4)::is("ed"); # chain functions
 t4a = name::not("Amber"); # checks that the result is not text "Amber"
 t4b = char::not("A"); # your checks should be relative to the size
@@ -247,7 +247,7 @@ config {
         .syntactic_message: "unknown syntax"
     },
     .charseq_buffer_size: 1024,
-    .parser_type: .STREAMED, #.BUFFERED 
+    .parser_type: .BUFFERED,
 }
 
 

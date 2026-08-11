@@ -1,5 +1,12 @@
 # Binding Power
 
+Binding power sets the parsing precedence and associativity of operators, which is what you need when parsing expressions. Each operator is given a **left binding power (LBP)** and a **right binding power (RBP)**:
+
+- Right-associative when `LBP > RBP`
+- Left-associative when `LBP < RBP`
+
+Binding power is optional, but it is important whenever you parse expressions. The example below builds a small expression parser and then assigns binding powers in a `bindpow` block.
+
 ```parser
 # Character Sequence is defined with `=`
 name = <A:Za:z> (<A:Za:z_0:9>)*;
@@ -42,7 +49,7 @@ parser {
 
 # eol is a built-in action for END-OF-LINE
 
-# OPTIONALLY!!! Parsing Precidence can be set for actions
+# OPTIONALLY!!! Parsing precedence can be set for actions
 # if these are matched in the parsing, the following binding powers are applied.
 
 # Binding Power
