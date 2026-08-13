@@ -8,6 +8,8 @@
 # A 100
 # B  25
 
+program Basic; # every parser is a module named with `program`
+
 parser {
     # action      ->  ast: (node(children)...)
     (name number) -> (name(number)); # generate name with number as child of name
@@ -27,6 +29,8 @@ number = <0> | <1:9> <0:9>+; # character sequence
 # ADVANCE LANG
 # X = 23 + 5 * (6 - 4)
 # X
+
+program Advance;
 
 # Character Sequence is defined with `=`
 name = <A:Za:z> (<A:Za:z_0:9>)*;

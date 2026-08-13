@@ -28,6 +28,8 @@ class ParserLexer(RegexLexer):
 
     # Block / command keywords that open a grammar construct.
     _KEYWORDS = (
+        "program",
+        "link",
         "parser",
         "config",
         "bindpow",
