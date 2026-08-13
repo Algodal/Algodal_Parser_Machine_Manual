@@ -1,6 +1,6 @@
 # Abstract Syntax Tree
 
-The Abstract Syntax Tree (AST) is generated automatically for all syntac actions. How the AST is generated can be customized using the **AST grammar**.
+The Abstract Syntax Tree (AST) is generated automatically for all syntac actions. By default, all charseq and syntac in the grammar ends up in the AST. To customize the AST, the **AST grammar** is used.
 
 AST grammar are defined along side Action grammar using `->`. Both the AST and Action grammar is required to be contained in `()`.
 
@@ -34,9 +34,9 @@ A := (B C) -> (B (C)); # Generates A as parent of B
 Grammar-AST syntax:
 ```parser
 (A B) -> (A B) # A and B are sibling
-(A+ B+) -> (A B) # A... and B... are sibling; U... means U 
+(A+ B+) -> (A B) # A... and B... are sibling; <U>... means U 
                  # and each additional U added as sibling to the previous U
-(A* B*) -> (A B) # A... and B... are sibling; U... means U and each 
+(A* B*) -> (A B) # A... and B... are sibling; <U>... means U and each 
                  # additional U added as sibling to the previous U if exists
 (A B) -> (A (B)) # A is parent of B
 (A+ B) -> (A (B)) # A... is parent of B; B would be given to the last A
@@ -49,6 +49,12 @@ Grammar-AST syntax:
                                  # which unit you are referring to.
                                  # labels only apply to the 
                                  # current grammar-ast customization
+(A+ B+ C) -> (A^ B C) # A^... and B.... and C are sibling; <U>^.... means each
+                      # each additional A becomes a child of the previous A
+(A+ B+ C) -> (A^1 B C) # A^... and B.... and C are sibling; <U>^1.... means each
+                      # each additional A becomes a child of the 1st A
+(A+ B+ C) -> (A B C!) # A... and B.... and C! are sibling; <U>! means each
+                      # do not save U but save any children of U in its place
 ```
 
 ```parser
