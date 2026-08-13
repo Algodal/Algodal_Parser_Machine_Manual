@@ -7,7 +7,7 @@ Algodal Parser Machine documentation
 ====================================
 
 A Powerful text parser generator for quick and easy parser implementations for your projects.
-Get it here: https://algodal.itch.io/algodal-parser-generator-tool
+Get it here: https://algodal.itch.io/algodal-parser-machine
 
 
 .. toctree::
@@ -16,6 +16,7 @@ Get it here: https://algodal.itch.io/algodal-parser-generator-tool
 
    overview
    language
+   module
 
 .. toctree::
    :maxdepth: 1
@@ -53,3 +54,4 @@ Get it here: https://algodal.itch.io/algodal-parser-generator-tool
    :caption: Examples
 
    samples
+   quick_reference
