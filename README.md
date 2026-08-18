@@ -1,7 +1,7 @@
 # Algodal Parser Machine
 
 **Algodal Parser Machine (APM)** is a parser generator that produces
-*LR parsers* in C. Instead of emitting one self-contained parser, APM splits a
+*LL parsers* in C. Instead of emitting one self-contained parser, APM splits a
 parser into two parts:
 
 - a **Virtual Machine (VM)** — a shared codebase you integrate into your project
@@ -18,7 +18,7 @@ Parser Machine Language (APML)**.
 
 ## Features
 
-- Generates fast, portable LR parsers in C99
+- Generates fast, portable LL parsers in C99
 - Drops into any C or C++ project, and binds to any language that supports C ABI
 - Provides a plugin-like feature via `custom_actions` for users to handle parsing extremely complex languages.
 - Semantic predicates via `sevmval` variables

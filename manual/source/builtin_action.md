@@ -8,7 +8,7 @@ Some actions are so common that APM builds them in for quick and easy use.
 | `nl` | parses newline |
 | `eol` | parses end-of-line |
 
-# The equivalent to the built-in actions
+## The equivalent to the built-in actions
 
 ```parser
 spc = < \t>;

@@ -8,6 +8,8 @@ Binding power sets the parsing precedence and associativity of operators, which 
 Binding power is optional, but it is important whenever you parse expressions. The example below builds a small expression parser and then assigns binding powers in a `bindpow` block.
 
 ```parser
+program expression;
+
 # Character Sequence is defined with `=`
 name = <A:Za:z> (<A:Za:z_0:9>)*;
 number = <0> | <1:9> <0:9>+;

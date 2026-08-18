@@ -1,6 +1,6 @@
 # Module
 
-Every parser definition is a **module**. A module is the top-level container for a parser — its actions, its `parser` block, and any configuration all live inside one module.
+Every parser definition is a **module**. A module is the top-level container for a parser — its actions, its `parser` block, and any configuration all live inside one module. 
 
 ## Naming a Module
 

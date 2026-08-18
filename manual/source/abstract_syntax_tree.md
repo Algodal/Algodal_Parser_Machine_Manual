@@ -58,6 +58,8 @@ Grammar-AST syntax:
 ```
 
 ```parser
+program Basic;
+
 name = <A:Z>+;
 number = <0:9>+;
 stmt := (name number) -> (number name);

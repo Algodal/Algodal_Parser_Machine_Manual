@@ -4,7 +4,7 @@ Released July 7, 2026
 
 ---
 
-Algodal Parser Machine (APM) generates *LR parsers*, but with a twist. Instead of emitting one self-contained parser, it splits a parser into two parts: a **Virtual Machine (VM)**, a shared codebase you merge into your project, and a **Parser Program**, a bytecode file that represents one specific parser. The VM runs the Parser Program.
+Algodal Parser Machine (APM) generates *LL parsers*, but with a twist. Instead of emitting one self-contained parser, it splits a parser into two parts: a **Virtual Machine (VM)**, a shared codebase you merge into your project, and a **Parser Program**, a bytecode file that represents one specific parser. The VM runs the Parser Program.
 
 This structure lets a single codebase run many different parsers, which increases portability, adds thread safety, reduces dependencies and reduces complexity.
 
