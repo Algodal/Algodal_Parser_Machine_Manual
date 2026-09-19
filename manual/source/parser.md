@@ -1,37 +1,62 @@
 # Parser
 
-The parser lexes the incoming text into character sequences and analyzes those sequences into syntactic blocks *simultaneously*. That is, it builds the AST at the same time as it generates tokens. It is a top-down parser that provides **lanes** of series. Each lane is **parsed** simultaneously until a single lane is selected. Lanes are not quite the same as options — there are minor differences that let lanes drive the parsing. Lanes are syntactic actions, that is, they generate AST.
+The parser lexes the incoming text into character sequences and analyzes those sequences into syntactic blocks *simultaneously*. That is, it builds the AST at the same time as it generates tokens. It is a top-down parser.
+
+The parser block names the **start grammar** — the single grammar the parser begins from. Parsing runs it from the front of the input; when it returns a match and text remains, the parser runs it **again** from where it left off, and so on until the input is consumed or a run matches nothing. Each run is one top-level block. There is exactly one start grammar.
 
 ```parser
 parser {
-    # expects syntac or charseq actions
+    main_grammar;   # the single start grammar (a syntac/charseq action, an option, a series, or any unit)
 }
 ```
 
-```parser
-parser {
-    A; # single lane
-}
-```
+The start grammar can be a **labeled action**:
 
 ```parser
 parser {
-    A;
-    B;
-    C; # 3 lanes
+    my_action;
 }
 ```
 
-```parser
-parser {
-    A B C; # this lane has a series of multiple units,
-    # which gives it more context
-}
-```
+an **option**:
 
 ```parser
 parser {
-    A B C D; # lanes 1 and 2 are similar but differ at the 4th unit
-    A B C F;
+    "A" | "B" | "C";
 }
+```
+
+any single **unit**:
+
+```parser
+parser {
+    "A";
+}
+```
+
+or a **series**:
+
+```parser
+parser {
+    "A" "B" "C" "D";
+}
+```
+
+## Repetition is the loop; separators are `.`
+
+Because the parser re-runs the start grammar over what remains, a grammar of adjacent items needs no counter — the loop walks them:
+
+```parser
+parser {
+    item;   # the loop repeats it: item item item ...
+}
+```
+
+The loop does **not** skip anything between runs. Inbetween is the `.` building block — it runs the configured skip only where `.` appears in the grammar. So when items are separated (e.g. by spaces), put `.` where the separator goes:
+
+```parser
+parser {
+    item (. item)*;   # items separated by the inbetween
+}
+. { spc }
 ```

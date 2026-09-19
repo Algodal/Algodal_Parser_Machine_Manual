@@ -142,16 +142,6 @@ custom_action {
 ```parser
 # 1. Variables
 
-# Parser Type
-# Captures the result of a parse.
-# Automatically cast to a text or number based on use. Can do explicit cast as well.
-# Can not initialize
-
-parval x;
-
-
-
-
 # Text Type
 # Holds a literal text (aka string).
 # Can be initialized
@@ -168,7 +158,7 @@ numval b = 50;
 numval c =  0; # range
 
 # Semantic Type
-# A set of parser type. Each type you assign a value to it, if the value is different to all the values
+# A set of text values. Each time you assign a value to it, if the value is different to all the values
 # in the set then the value is added to the set.
 # It can be used in parsing, it does a exact match of the text against all its values in the set.
 # Can not be used like a regular Text or Number type.
@@ -184,16 +174,17 @@ semval f = # all values are added to the set
 
 #2. Assignment of Variables
 
-parval x;  # global variable
+texval x;  # global variable
 
-A = "bone" >> x; # >> grammar assigns the result of a parse to its variable
-B = "bone" >> parval y; # local variable definition is supported. Variable exists only in the action.
+A = "bone" => x; # => grammar assigns what was parsed to its variable
+B = "bone" => texval y; # local variable definition is supported. Variable exists only in the action.
+C = "bone" => texval z z; # a variable named again MATCHES the text it holds
 
 #3. Conversion
 
-parval a;
+numval a;
 
-A = "2" >> a;
+A = "2" => a;
 B = a; # a is auto-converted to text and parsed for an exact match
 C = "x"-a; # a is auto-converted to number applied to counter.
 D = tex::icase(a::to_text()) "x"-(a::to_number()); # explicit conversion
@@ -206,14 +197,14 @@ A = perm["A" "B" "C"] "D";
 # 5. Logic Block
 # Logic block allows the specification of non-parsing logic which can be mathematical logic
 A = {5 * 5 == 20};
-B = char >> numval x >> numval y {y = 15; x * y == 65};
+B = char => numval x char => numval y {y = 15; x * y == 65};
 
 # 6. IF statement
 # Parsing can branch conditionally
 
 numval x = 0
 
-A = char >> x; # auto-conversion to numval
+A = char => x; # auto-conversion to numval
 B = C if({x == 1}) [T|F] D; # if logic is true then parse T else parse F
 E = G if(M) [T | F]; # if M parses, then parse T else parse F
 H = I if(M) [T];  # if M parses, then parse T
@@ -228,7 +219,7 @@ C = tex::icase("ABC"); # exact but with any case
 # 8. Parser Result Functions
 
 name = <A:Za:z>+;
-t1 = name::is("Fred"); # or name >> parval x x::is("Fred"); | checks if the result equals "Fred"
+t1 = name::is("Fred"); # or name => texval x x::is("Fred"); | checks if the result equals "Fred"
 t2 = name::subkind("Fr"); # checks if result has substring called "Fr"
 t3a = name::part(1); # section the result; returns first character; 1 index based
 t3b = name::part(1:4); # section the result; returns first to fourth character

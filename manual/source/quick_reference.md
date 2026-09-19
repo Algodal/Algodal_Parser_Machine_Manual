@@ -5,8 +5,8 @@ A one-page summary of every APML feature. Each entry links to its full chapter.
 ## Module — [details](module.md)
 
 ```parser
-program MyParser;   # name the module
-link other;         # reuse another module's actions
+program MyParser;         # name the module
+program "Nice Name" mp;   # ... with a display name
 ```
 
 ## Actions — [details](language.md)
@@ -20,7 +20,7 @@ b := "x";   # syntac action (:=)  -> AST node
 
 ```parser
 s = A B C;          # series: A then B then C
-o = A | B;          # option (OR): every alternative checked
+o = A | B;          # option (OR): every alternative checked, longest wins
 f = A / B;          # option (Firstly OR): stop at first match
 g = A (B | C) D;    # group as a single unit
 ```
@@ -31,13 +31,19 @@ g = A (B | C) D;    # group as a single unit
 # line comment to end of line
 ```
 
+## Alias — [details](alias.md)
+
+```parser
+alias tab \x09;     # a name for a literal value
+```
+
 ## Characters — [details](character.md)
 
 ```parser
 A = char;        # any single utf-8 character
-B = <A:Z>;       # regex block; ranges use ':'
+B = <A:Z>;       # character block; ranges use ':'
 C = \x41;        # hex literal (A)
-D = \u0041;  # unicode literal (A)
+D = \u0041;     # unicode literal (A)
 E = \x43,41,54;  # chain -> "CAT"
 F = \x41:5A;     # range A..Z
 ```
@@ -55,9 +61,10 @@ F = \x41:5A;     # range A..Z
 ## Built-in Actions — [details](builtin_action.md)
 
 ```parser
-spc;   # space
-nl;    # newline
-eol;   # end-of-line
+spc;   # space or tab
+nl;    # line break
+eol;   # end-of-line (a line break or end of input)
+eof;   # end of input (matches zero width)
 ```
 
 ## Inbetween (skip) — [details](inbetween.md)
@@ -67,22 +74,10 @@ stmt = "(" . "A" . ")";  # '.' skips per the config below
 . { spc, nl }            # required whenever '.' is used
 ```
 
-## Variables — [details](variable.md)
-
-```parser
-parval p;                  # result of a parse (cannot init)
-texval t = "Hello World";  # text
-numval n = 50;             # 0..max
-semval s = "Cat", "Dog";   # set of text values
-
-A = "A" >> p;              # capture parse result into a variable
-B = "B" >> parval x;       # local variable, action-scoped
-```
-
 ## Permutation — [details](permutation.md)
 
 ```parser
-A = perm["A" "B" "C"];  # match members in any order
+A = perm["A" "B" "C"];  # match members in any order, each once
 ```
 
 ## Text Functions — [details](text_function.md)
@@ -93,76 +88,204 @@ tex::oneof("ABC");   # one character from the set
 tex::icase("ABC");   # case-insensitive exact match
 ```
 
-## Parser Result Functions — [details](parser_result_function.md)
+## Result Functions — [details](parser_result_function.md)
+
+A **predicate** asks a question about the matched text and can only pass or fail
+it. A **producer** answers with a number instead, and never fails anything.
 
 ```parser
-name::is("Fred");      # result equals text
-name::not("Amber");    # result does not equal text
-name::subkind("Fr");   # result contains substring
-name::to_text();       # parsed text
-name::to_number();     # parsed text as number
-name::length();        # length of parsed text
-name::part(1);         # section: 1-indexed char
-name::part(1:4);       # section: chars 1..4
-name::part(2+);        # section: char 2..end
-<A:Z>+::count;         # counter iteration count
-name::part(1)::is(\x20); # chain functions
+# predicates
+name::is("Fred");        # matched text equals
+name::not("Amber");      # ... does not equal
+name::subkind("Fr");     # ... contains
+
+# narrowing what is asked about
+name::part(1);           # 1-indexed character
+name::part(1:4);         # characters 1..4
+name::part(2+);          # character 2 to the end
+name::part(1)::is("F");  # chained
+
+# producers -- no parentheses, they take no argument
+name::char_count;        # characters matched
+name::to_num;            # matched text as a number; 0 if it is not one
+A+::iter_steps;          # times a counter ran; 1 if not counted, 0 if none
+
+# a producer may be compared against a NUMBER
+name::char_count::is(3);      # exactly three characters
+name::to_num::is(200);        # the value 200 -- so "0200" matches too
+name::char_count::is(limit);  # ... or against a numval
+
+# per: ask the rest of the chain of each repetition
+char*::per::not("x");
 ```
 
-## Logic Block — [details](logic_block.md)
+## Variables — [details](variable.md)
+
+Local to one action, or global to the whole parse. A `texval` holds a span of
+text; a `numval` holds a number.
 
 ```parser
-A = {5 * 5 == 25};                          # succeeds when logic is true
-B = char >> numval x {x * 2 == 130};        # guard a parse with logic
+texval greeting = "Hello";   # global, set before parsing starts
+numval limit = 3;            # global number
+
+A := (word => texval x) x;   # capture, then require the same text again
+B := (word => texval x) (word => x);   # declare once, assign again
+C := (n::to_num => numval v);          # a producer fills a numval
 ```
 
-## IF Statement — [details](if_statement.md)
+A variable must be assigned on **every** path that reaches a read, or the
+grammar is refused — nothing is zeroed, so there is no safe stale value.
+
+## Semvar — [details](variable.md)
+
+A **set** of text the grammar builds as it parses and then matches against —
+what a semantic predicate needs and a plain variable cannot give. Global, at
+most four.
 
 ```parser
-B = C if({x == 1}) [T|F] D;  # logic true -> T, else F
-E = G if(M) [T | F];         # M parses -> T, else F
-H = I if(M) [T];             # M parses -> T
-J = K if(M) [|F];            # M fails  -> F
+semvar kind = "int", "short";        # declared members
+semvar name;                         # starts empty
+
+decl := "typedef" (ident => kind) ";";   # add what was parsed
+use  := kind;                            # match any member, longest first
+alt  := kind::first;                     # ... earliest added instead
 ```
 
-## Custom Action — [details](custom_action.md)
+## Scope — [details](variable.md)
+
+A depth the **input** moves. Leaving a scope forgets whatever was added to the
+sets bound to it — ordinary block scoping.
 
 ```parser
-indent = _;   # grammar defined externally in user code
-custom_action {
-    indent: "apm_py_indent",
+scope blk
+    begin = "{";
+    end   = "}";
+
+semvar kind {"scope": blk} = "int";   # bound to blk; unbound sets never forget
+
+block := blk::begin item* blk::end;
+```
+
+`begin` and `end` may sit in different actions, and blocks nest freely.
+
+## Logic Blocks — [details](logic_block.md)
+
+A logic block **tests values**. It reads no input and moves no cursor: it
+succeeds or fails, and consumes nothing either way. `{{ ... }}` is *final* — it
+runs for what it does, always holds, and nothing may follow it in the grammar.
+
+```parser
+A := (word => texval x) {x == "cat"};      # a test
+B := "a" {{9 => n}};                       # a deed, always holds
+```
+
+Operators, in C's precedence, tightest first:
+
+```parser
+NOT a            # negation
+a * b   a / b    # division by zero is 0
+a + b   a - b    # a - b clamps at 0
+a < b   a <= b   a > b   a >= b
+a == b  a != b   # text compares by bytes; == and != are all text has
+a AND b          # short-circuits: b is not evaluated when a is false
+a OR b           # short-circuits: b is not evaluated when a is true
+TRUE  FALSE      # one and zero
+set::is(t)  set::not(t)  set::clear    # questions about a semvar
+error("...")                           # stop the whole parse
+```
+
+Statements are separated by `;`, and the last one's value is the block's answer.
+A statement that produced nothing — an assignment, a cleared set — is a deed
+rather than an answer, and a deed is no reason to fail.
+
+### `error("...")`
+
+Every other failure means *"this did not match here"*, and it sends the machine
+looking for another reading. `error()` means the input is wrong and there is
+nothing else to try: it travels straight out of options, series, counters,
+permutations and `if` conditions alike, ends the run, and its message becomes
+the run's error.
+
+```parser
+z := (word => texval x) {x == "cat" OR error("only cats here")};
+```
+
+Because `OR` short-circuits, that reports nothing for a cat and stops for a dog.
+`{{ }}` does not absorb it either — always holding is an *answer*, and `error()`
+does not give one.
+
+## IF Statements — [details](if_statement.md)
+
+```parser
+if (cond) [then | else]     # both branches
+if (cond) [then]            # then only
+if (cond) [| else]          # else only
+```
+
+The condition may be a logic block or a grammar; a grammar condition **consumes**
+what it matched. With no branch to take, an `if` is like `E?` — the cursor
+resets and the next unit is read.
+
+## Feature Config
+
+How a declaration is configured, written apart from what it declares. Entries
+are keyed, so order never matters; a key the feature does not read is an error.
+
+```parser
+{ "key" : value , ... }     # value is a label, a number or a string
+```
+
+## Config — [details](config_settings.md)
+
+What the grammar asks the machine to build. Optional; every setting has a
+default and what you do not write keeps it.
+
+```parser
+config {
+    "ast-node-text" : FALSE,     # literals stop being nodes
+    "ast-node-char" : TRUE,      # char literals start being nodes
 }
 ```
+
+| setting | default |
+|---|---|
+| `ast-node-action` | `TRUE` |
+| `ast-node-text` · `-text-counter` · `-text-series` | `TRUE` |
+| `ast-node-char` · `-char-counter` · `-char-series` | `FALSE` |
+
+A matched literal is a node named by **what it matched**, and adjacent literals
+make **one** node — `"A" "B"` is `text "AB"`. A `.` between them ends the run, so
+`"a" . "b"` stays two. Turn everything off and a parse builds no tree at all,
+which is all a recogniser needs.
+
+**Changing a setting changes the AST.** An interpreter is written against one
+config.
 
 ## Parser Block — [details](parser.md)
 
 ```parser
 parser {
-    A;        # one lane
-    B C;      # a lane with a series
+    main_grammar;   # the single start grammar; the loop re-runs it over what remains
+}
+parser { A | B | C; }       # an option
+parser { A B C; }           # a series
+parser { item; }            # the loop walks adjacent items
+parser { item (. item)*; }  # items separated by the inbetween (`.`)
+```
+
+## Node IDs — [details](abstract_syntax_tree.md)
+
+```parser
+node_id {
+    Label: "saved name",    # what an action is saved as in the AST
 }
 ```
 
-## AST Customization — [details](abstract_syntax_tree.md)
+## Not yet implemented
 
-```parser
-(A B)   -> (A B);    # A and B are siblings
-(A B)   -> (A (B));  # A is parent of B
-(A B C) -> (A B);    # C discarded
-```
+These appear in other chapters but no build accepts them yet:
 
-## Binding Power — [details](binding_power.md)
-
-```parser
-bindpow {
-    "*" : (8, 9),   # left-associative  (LBP < RBP)
-    "^" : (11, 10), # right-associative (LBP > RBP)
-}
-```
-
-## Config Settings — [details](config_settings.md)
-
-```parser
-```
-config { <feature> : <value> }
-```
+- **`link`** — reusing another module's actions
+- **Binding power** `bindpow` — see [binding_power](binding_power.md)
+- **Custom actions** — see [custom_action](custom_action.md)
+- **AST customization** `(A B) -> (A (B))` — see [abstract_syntax_tree](abstract_syntax_tree.md)

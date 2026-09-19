@@ -112,11 +112,10 @@ APML has four types.
 | :--- | :--- |
 | **Text** | a sequence of characters |
 | **Number** | `0` or a positive number (negatives are not supported) |
-| **Parser** | the result of a parse; auto-converts to Text or Number |
-| **Semantic** | a *set* of Parser values, usable like an option of text matches |
+| **Semantic** | a *set* of text values, usable like an option of text matches |
 
 :::{seealso}
-Each type has a corresponding variable keyword — `texval`, `numval`, `parval`, and `semval`. See [Variables](variable.md).
+Each type has a corresponding variable keyword — `texval`, `numval`, and `semval`. A parse result is not a type of its own: `=>` assigns one to a variable, and the variable's type says what is kept. See [Variables](variable.md).
 :::
 
 ## Range

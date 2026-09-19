@@ -5,7 +5,7 @@ The IF statement lets you branch the parsing based on a condition or on whether 
 ```parser
 numval x = 0
 
-A = char >> x; # auto-conversion to numval
+A = char => x; # auto-conversion to numval
 B = C if({x == 1}) [T|F] D; # if logic is true then parse T else parse F
 E = G if(M) [T | F]; # if M parses, then parse T else parse F
 H = I if(M) [T];  # if M parses, then parse T

@@ -20,7 +20,7 @@ Actions allow some functions for additional parsing power.
 
 ```parser
 name = <A:Za:z>+;
-t1 = name::is("Fred"); # or name >> parval x x::is("Fred"); | checks if the result equals "Fred"
+t1 = name::is("Fred"); # or name => texval x x::is("Fred"); | checks if the result equals "Fred"
 t2 = name::subkind("Fr"); # checks if result has substring called "Fr"
 t3a = name::part(1); # section the result; returns first character; 1 index based
 t3b = name::part(1:4); # section the result; returns first to fourth character

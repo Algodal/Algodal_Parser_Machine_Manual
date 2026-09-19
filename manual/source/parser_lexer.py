@@ -41,7 +41,6 @@ class ParserLexer(RegexLexer):
 
     # Variable type keywords.
     _TYPES = (
-        "parval",
         "texval",
         "numval",
         "semval",
@@ -99,7 +98,7 @@ class ParserLexer(RegexLexer):
             # Identifiers (actions, variables).
             (r"[a-zA-Z_]\w*", Name),
             # Operators — longest first.
-            (r":=|->|>>|::", Operator),
+            (r":=|->|=>|::", Operator),
             (r"[=|/+*?:.\-!]", Operator),
             # Punctuation.
             (r"[\[\](){},;]", Punctuation),
