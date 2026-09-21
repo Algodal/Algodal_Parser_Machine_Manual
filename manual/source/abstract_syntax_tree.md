@@ -163,6 +163,18 @@ A labelled unit answers **only** to its label, which is what leaves the plain
 name free for the other one. Labels exist only for the map they appear in and
 never reach the parser.
 
+:::{note}
+A map that says exactly what the body already says is fine. It is dropped, and
+costs nothing:
+
+```parser
+z := (A . B) -> (A B);   # the same as writing no map at all
+```
+
+Deleting one entry from a map is an ordinary edit, and the moment before the
+next keystroke should not be an error.
+:::
+
 :::{important}
 A map may place each thing **once**. Naming the same unit in two places is
 refused — a node has one parent, and a map that asked for two would have to
