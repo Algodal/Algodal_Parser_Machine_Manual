@@ -74,6 +74,16 @@ stmt = "(" . "A" . ")";  # '.' skips per the config below
 . { spc, nl }            # required whenever '.' is used
 ```
 
+## Give — [details](counter.md)
+
+```parser
+give[X+ B]     # X repeats, then hands repetitions back until B matches
+give[. nl]     # the inbetween skip stops short, leaving a newline
+```
+
+A counter followed by its own base needs no `give` — `A+ A` is compiled as
+`A A+`.
+
 ## Permutation — [details](permutation.md)
 
 ```parser

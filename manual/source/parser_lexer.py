@@ -43,6 +43,7 @@ class ParserLexer(RegexLexer):
         "node_id",
         "alias",
         "perm",
+        "give",
         "if",
         "node",
     )

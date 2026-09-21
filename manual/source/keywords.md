@@ -104,6 +104,7 @@ node_ident = "x";  # fine -- containing a keyword is not being one
 | | |
 | :--- | :--- |
 | `perm` | members in any order |
+| `give` | a counter that gives ground |
 | `if` | branch on a test or on whether something parses |
 | `alias` | a name for a literal value |
 | `bindpow` | an operator precedence table |
