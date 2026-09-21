@@ -49,7 +49,7 @@ Get it here: https://algodal.itch.io/algodal-parser-machine
    text_function
    parser_result_function
    system_function
-   custom_action
+   foreign
    config_settings
 
 .. toctree::

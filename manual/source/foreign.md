@@ -1,4 +1,4 @@
-# Custom Action
+# Foreign Bodies
 
 Some things a grammar cannot say. Python's indentation is the standard example:
 what counts as an indent depends on a stack of previous indents, which is not a
@@ -21,12 +21,12 @@ grammar.
 
 ## Binding it to your code
 
-A `custom_action` block says which function stands behind each one. The name on
+A `foreign` block says which function stands behind each one. The name on
 the left is the action; the string on the right is what your program registers
 the function under:
 
 ```parser
-custom_action {
+foreign {
     indent:  "apm_py_indent",
     dedent:  "apm_py_dedent",
     newline: "apm_py_newline",
@@ -38,7 +38,7 @@ function under that name.
 
 ## Using one
 
-A custom action is a **matcher**, exactly as `char` is. It reads text and says
+A foreign body is a **matcher**, exactly as `char` is. It reads text and says
 how many bytes it took; it makes no node of its own. The action around it owns
 whatever it matched, the same way it would over a literal:
 
@@ -56,6 +56,6 @@ action is deliberately bodiless rather than forgotten.
 :::
 
 :::{seealso}
-`custom_action` is a [reserved word](keywords.md). The names inside the block
+`foreign` is a [reserved word](keywords.md). The names inside the block
 are quoted strings, so they are free of that restriction.
 :::

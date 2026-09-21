@@ -28,7 +28,7 @@ Parser Machine Language (APML)**.
 - **Pratt parsing** with binding powers, and left recursion written directly
 - Semantic predicates via `semvar` sets, with `scope` for block scoping
 - Text and number variables, logic blocks and `if`, for grammars that decide
-- **Custom actions** let a rule body live in your C code, for things no grammar
+- **Foreign bodies** let a rule body live in your C code, for things no grammar
   can state — Python indentation, for one
 - **Linking** calls into another parser program, resolved when it loads
 - Simple, keyword-based syntax with a short list of reserved words

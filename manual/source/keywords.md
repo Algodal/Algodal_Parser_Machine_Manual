@@ -107,7 +107,7 @@ node_ident = "x";  # fine -- containing a keyword is not being one
 | `if` | branch on a test or on whether something parses |
 | `alias` | a name for a literal value |
 | `bindpow` | an operator precedence table |
-| `custom_action` | bind a bodiless action to your C code |
+| `foreign` | bind a bodiless action to your C code |
 
 :::{note}
 Nothing *forces* reservation. APM is scannerless, so `perm` only reads as a

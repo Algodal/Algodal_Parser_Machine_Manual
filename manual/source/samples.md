@@ -109,7 +109,7 @@ X:
 
 What counts as an indent depends on a stack of earlier indents, which is not a
 shape any grammar can state. So those three actions have **no body**, and your
-program supplies them — see [Custom Action](custom_action.md).
+program supplies them — see [Foreign Bodies](foreign.md).
 
 ```parser
 # Indentation, which no grammar can describe: the body lives in C.
@@ -123,7 +123,7 @@ newline = _;
 
 block := name . ":" . indent . (name . newline)* . dedent;
 
-custom_action {
+foreign {
     indent:  "apm_py_indent",
     dedent:  "apm_py_dedent",
     newline: "apm_py_newline",

@@ -39,7 +39,7 @@ class ParserLexer(RegexLexer):
         "config",
         "feat",
         "bindpow",
-        "custom_action",
+        "foreign",
         "node_id",
         "alias",
         "perm",

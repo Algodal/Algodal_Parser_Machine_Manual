@@ -299,11 +299,11 @@ bindpow bp {
 feat {"bind": bp} expr := atom | expr . "+" . expr | "not" . expr;
 ```
 
-## Custom Actions — [details](custom_action.md)
+## Foreign Bodiess — [details](foreign.md)
 
 ```parser
 indent = _;                        # body lives in your C code
-custom_action { indent: "apm_py_indent" }
+foreign { indent: "apm_py_indent" }
 ```
 
 ## AST Maps — [details](abstract_syntax_tree.md)
