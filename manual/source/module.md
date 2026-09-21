@@ -83,6 +83,20 @@ once, when the modules are brought together.
 That is the trade for being able to compile modules separately and combine them
 later.
 
+## Running a linked set
+
+The compiler builds each module on its own, and they are brought together when
+they load. From the command line:
+
+```sh
+apma html.apm -o html.apmb
+apma javascript.apm -o javascript.apmb
+apmr html.apmb page.html --link javascript.apmb
+```
+
+Without the link, a call into the other module reports that it was never
+resolved rather than failing somewhere stranger.
+
 :::{seealso}
 To build the VM into your own program and run a module, see
 [How to Use](how_to_use.md). The `parser` block that drives a module is
