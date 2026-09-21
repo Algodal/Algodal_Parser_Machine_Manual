@@ -1,18 +1,23 @@
 # Language
 
-Parsers are written in the **Algodal Parser Machine Language (APML)**. The language uses an *EBNF*-like syntax for defining grammar rules (called *actions*), together with special syntaxes for lexing, analysis, and for generating a token list and an abstract syntax tree.
+Parsers are written in the **Algodal Parser Machine Language (APML)**. The
+language uses an *EBNF*-like syntax for grammar rules — called **actions** —
+together with extra syntax for matching characters, for deciding on context, and
+for shaping the abstract syntax tree.
 
 Here is a small but complete parser:
 
 ```parser
 # A simple parser
-name = tex::oneof("ABCDEFGHIJKLMOPQRSTUVWXYZ")+;
-number = tex::oneof("0123456789")+;
-space = tex::oneof(" \t")+;
-newline = "\r\n" / "\n";
-stmt := name space number space? newline*;
+program greeting;
 
-parser { stmt }
+name   = <A:Z>+;
+number = <0:9>+;
+stmt  := name . number . eol;
+
+parser { stmt; }
+
+. { spc }
 ```
 
 The rest of this page covers the core building blocks. Individual features each have their own chapter.
@@ -79,10 +84,10 @@ act = A B C | D E | F G H; # three alternative series
 
 Both `|` and `/` are options, but they differ in how alternatives are checked:
 
-- `|` (**OR**) — every alternative is checked, even after one succeeds.
-- `/` (**Firstly OR**) — checking stops at the *first* alternative that succeeds.
+- `|` (**OR**) — every alternative is tried, and the **longest** match wins. A tie goes to the one written first.
+- `/` (**Firstly OR**) — trying stops at the *first* alternative that succeeds.
 
-So in `dog | cat`, `cat` is checked even when `dog` already matched. In `dog / cat`, `cat` is only checked if `dog` fails.
+So in `dog | cat`, `cat` is tried even when `dog` already matched, and whichever consumed more text is kept. In `dog / cat`, `cat` is only tried if `dog` fails.
 
 :::{tip}
 Reach for `/` (*Firstly OR*) when the order of alternatives matters or you want to stop at the first match — it is usually what you want and avoids redundant checks. Use `|` (*OR*) when every alternative must be considered.
@@ -106,16 +111,17 @@ act = (A B (C | D) E | F (G) H);
 
 ## Types
 
-APML has four types.
+APML has three types.
 
-| Type | Holds |
-| :--- | :--- |
-| **Text** | a sequence of characters |
-| **Number** | `0` or a positive number (negatives are not supported) |
-| **Semantic** | a *set* of text values, usable like an option of text matches |
+| Type | Keyword | Holds |
+| :--- | :--- | :--- |
+| **Text** | `texval` | a sequence of characters |
+| **Number** | `numval` | `0` or a positive number; negatives and decimals are not supported |
+| **Semantic** | `semvar` | a *set* of text values, matched like an option of its members |
 
 :::{seealso}
-Each type has a corresponding variable keyword — `texval`, `numval`, and `semval`. A parse result is not a type of its own: `=>` assigns one to a variable, and the variable's type says what is kept. See [Variables](variable.md).
+A parse result is not a type of its own. `=>` assigns one to a variable, and
+the variable's type says what is kept. See [Variables](variable.md).
 :::
 
 ## Range
@@ -127,6 +133,12 @@ D = \x41:5A; # characters A through Z
 ```
 
 Ranges appear throughout the language, in [Character](character.md) literals and blocks, [Counter](counter.md) repetitions, and [Parser Result Function](parser_result_function.md) sectioning with `::part`.
+
+## Reserved Words
+
+Every word the language spells out is **reserved**: it cannot be the name of an
+action, a variable, or anything else you declare. The list is short — see
+[Keywords](keywords.md).
 
 ## A Note on "Text"
 

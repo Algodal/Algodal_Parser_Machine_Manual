@@ -1,6 +1,9 @@
 # Parser
 
-The parser lexes the incoming text into character sequences and analyzes those sequences into syntactic blocks *simultaneously*. That is, it builds the AST at the same time as it generates tokens. It is a top-down parser.
+The parser is **scannerless** and top-down: it matches characters and builds the
+AST in the same pass. There is no token stream in between, and no token list to
+collect — a charseq action is the nearest thing to a token, and it is already a
+node in the tree.
 
 The parser block names the **start grammar** — the single grammar the parser begins from. Parsing runs it from the front of the input; when it returns a match and text remains, the parser runs it **again** from where it left off, and so on until the input is consumed or a run matches nothing. Each run is one top-level block. There is exactly one start grammar.
 
@@ -10,7 +13,7 @@ parser {
 }
 ```
 
-The start grammar can be a **labeled action**:
+The start grammar can be a **named action**:
 
 ```parser
 parser {

@@ -16,6 +16,7 @@ Get it here: https://algodal.itch.io/algodal-parser-machine
 
    overview
    language
+   keywords
    module
 
 .. toctree::

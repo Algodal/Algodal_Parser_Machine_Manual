@@ -281,11 +281,45 @@ node_id {
 }
 ```
 
-## Not yet implemented
+## Linking — [details](module.md)
 
-These appear in other chapters but no build accepts them yet:
+```parser
+link p2;                    # a separate machine, called into
+link "algodal" json;        # sugar for `link algodaljson;`
+X := p2::value;             # always qualified
+```
 
-- **`link`** — reusing another module's actions
-- **Binding power** `bindpow` — see [binding_power](binding_power.md)
-- **Custom actions** — see [custom_action](custom_action.md)
-- **AST customization** `(A B) -> (A (B))` — see [abstract_syntax_tree](abstract_syntax_tree.md)
+## Binding Power — [details](binding_power.md)
+
+```parser
+bindpow bp {
+    "+" : (50, 51) ;        # r = l + 1  -> left-associative
+    "^" : (11, 10) ;        # r = l - 1  -> right-associative
+    "not" : (0, 70) ;       # (0, r) prefix; (l, 0) postfix
+}
+
+feat {"bind": bp} expr := atom | expr . "+" . expr | "not" . expr;
+```
+
+## Custom Actions — [details](custom_action.md)
+
+```parser
+indent = _;                        # body lives in your C code
+custom_action { indent: "apm_py_indent" }
+```
+
+## AST Maps — [details](abstract_syntax_tree.md)
+
+```parser
+(A . B) -> (B A)          # order in the map is order in the tree
+(A . B) -> (A: (B))       # A becomes B's parent
+(A . B) -> (A)            # B is discarded
+(A . B) -> (A [B])        # B's children take B's place
+(A => texval v) -> (A node("Extra", v))    # a node nothing matched
+('a'A . 'b'A) -> ('b' 'a')                 # labels tell two apart
+```
+
+## Keywords — [details](keywords.md)
+
+Every word the language spells out is reserved and cannot be a declared name.
+Config and feature keys are quoted strings, so they are exempt.

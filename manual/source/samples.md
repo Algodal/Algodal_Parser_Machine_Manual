@@ -1,249 +1,208 @@
 # Samples
 
-**BASIC**
+Four complete parsers, from the smallest useful thing to a tour of the whole
+language. Every grammar on this page compiles as written.
 
-```parser
-# BASIC LANG
-# ---------
-# A 100
-# B  25
+## A line-oriented language
 
-program Basic; # every parser is a module named with `program`
-
-parser {
-    # action      ->  ast: (node(children)...)
-    (name number) -> (name(number)); # generate name with number as child of name
-    (spc | nl) -> (); # no AST generated
-}
-
-name = <A:Z>+; # character sequence
-number = <0> | <1:9> <0:9>+; # character sequence
-
-# spc is built-in rule for space
-# nl is built-in rule for newline
+```
+A 100
+B  25
 ```
 
-**ADVANCE**
-
 ```parser
-# ADVANCE LANG
-# X = 23 + 5 * (6 - 4)
-# X
+# A line-oriented language:  A 100
+program basic;
 
-program Advance;
+name   = <A:Z>+;
+number = <0:9>+;
 
-# Character Sequence is defined with `=`
-name = <A:Za:z> (<A:Za:z_0:9>)*;
-number = <0> | <1:9> <0:9>+;
+entry := (name . number) -> (name: (number));
 
-# Syntactic Analysis is defined with `:=`
-expr := 
-    (expr . "+" . expr) -> ("+"(expr expr)) |
-    (expr . "-" . expr) -> ("-"(expr expr)) |
-    (expr . "*" . expr) -> ("*"(expr expr)) |
-    (expr . "/" . expr) -> ("/"(expr expr)) |
-    ("(" . expr . ")") -> (expr)  | # anything not included in the AST specification is discarded
-    number # default AST
-;
+parser { . entry . ; }
 
-## You can choose not to specify the AST and a default AST will be generated
-## Example of what that will look like is specified below in comments
-# expr := 
-#    expr . "+" . expr |
-#    expr . "-" . expr |
-#    expr . "*" . expr |
-#    expr . "/" . expr |
-#    "(" . expr . ")"  |
-#    number
-#;
-
-# Since it is a mix parser (lexing and syntactical analysis occurs at the same time) there is no
-# luxury of discarding space tokens. Instead you can use `.` to represent generalized skip and define
-# what is skipped.
-
-. { # required if `.` is used in any grammar
-    spc, nl # everywhere `.` is used in grammar all the actions defined in this list is called until
-    # it can not be called anymore.
-};
-
-parser {
-    (name . "=" . expr eol) -> ("="(name expr)); 
-    name eol;
-}
-
-# eol is a built-in action for END-OF-LINE
-
-# OPTIONALLY!!! Parsing Precidence can be set for actions
-# if these are matched in the parsing, the following binding powers are applied.
-
-# Binding Power
-# Right-associative (LBP > RBP)
-# Left-associative  (LBP < RBP)
-
-bindpow { # this is completely optional (though important if you are parsing expressions)
-    "-"  : (0, 12), # duplicates allowed if lbp is 0
-    "!"  : (0, 12),
-    "++" : (14, 0),
-    "--" : (14, 0),
-    "^"  : (11, 10),
-    "*"  : (8, 9),
-    "/"  : (8, 9),
-    "+"  : (6, 7),
-    "-"  : (6, 7),
-    "<"  : (4, 5),
-    "<=" : (4, 5),
-    ">"  : (4, 5),
-    ">=" : (4, 5),
-    "==" : (2, 3),
-    "!=" : (2, 3),
-}
+. { spc, nl }
 ```
 
-**CHALLENGE**
+Each line becomes an `entry`, with the number placed **under** the name by the
+AST map rather than beside it:
+
+```
+entry "A 100"
+└── name "A"
+    └── number "100"
+entry "B  25"
+└── name "B"
+    └── number "25"
+```
+
+The parser block holds one start grammar, and the loop re-runs it over what is
+left — which is why a file of many lines needs no counter. The `.` around it is
+what lets the newline between entries be skipped.
+
+## An expression language
+
+```
+X = 23 + 5 * (6 - 4)
+```
+
+Precedence is not something the grammar shape can carry, so it goes in a
+[binding power](binding_power.md) table and the rule is bound to it.
 
 ```parser
-# CHALLENGE LANG
-# X:
-#   Y
-#   Z
-# A     X
+# An expression language with precedence:  X = 23 + 5 * (6 - 4)
+program expression;
 
-# In special cases the parser generator via standard library or user may provide
-# functions that allows for complex parsing that the syntaxical grammar can not 
-# support.
+name   = <A:Za:z> . (<A:Za:z_0:9>)*;
+number = <0> | <1:9> . <0:9>*;
 
-# The parser generator standard library provide functions for python indentation.
-# If the user wants haskel indentation, they can write their own functions.
-# Functions are expected to be written externally in C (or any language binding 
-# to C ABI and as long as the user can run the parser in that language's ecosystem).
+bindpow bp {
+    "+" : (50, 51) ;
+    "-" : (50, 51) ;
+    "*" : (60, 61) ;
+    "/" : (60, 61) ;
+    "^" : (71, 70) ;
+}
 
-name = <A:Za:z> (<A:Za:z_0:9>)*;
-structure1 := name . ":" . indent (name newline)* dedent;
-structure2 := name special_tab name;
+feat {"bind": bp} expr := atom
+    | expr . "+" . expr
+    | expr . "-" . expr
+    | expr . "*" . expr
+    | expr . "/" . expr
+    | expr . "^" . expr
+    ;
 
-# placeholder definition of actions (REQUIRED!)
-indent = _; # indicates that the action grammar is defined externally through user customized code.
-dedent = _;
-special_tab = _;
+atom  := number | name | group;
+group := ("(" . expr . ")") -> (expr);
+
+assign := (name . "=" . expr) -> (name: (expr));
+
+parser { . (assign | expr) . ; }
+
+. { spc, nl }
+```
+
+Note what the map on `group` does: `-> (expr)` keeps `expr` and drops the two
+bracket literals, so the parentheses do their job and then get out of the way.
+
+The result groups the way arithmetic says, not the way recursion fell:
+
+```
+assign "X = 23 + 5 * (6 - 4)"
+└── name "X "
+    └── expr "23 + 5 * (6 - 4)"
+        ├── atom → number "23"
+        ├── text "+"
+        └── expr "5 * (6 - 4)"
+            ├── atom → number "5 "
+            ├── text "*"
+            └── atom → group → expr "6 - 4"
+```
+
+## Indentation, in C
+
+```
+X:
+  Y
+  Z
+```
+
+What counts as an indent depends on a stack of earlier indents, which is not a
+shape any grammar can state. So those three actions have **no body**, and your
+program supplies them — see [Custom Action](custom_action.md).
+
+```parser
+# Indentation, which no grammar can describe: the body lives in C.
+program pylike;
+
+name = <A:Za:z> . (<A:Za:z_0:9>)*;
+
+indent  = _;
+dedent  = _;
 newline = _;
 
-# Reference linking of the custom action with user code. Actual linking is done outside DSL.
-# User code is called on text where ever action is used to generate syntactic objects.
-custom_action { 
-    indent: "apm_py_indent",
-    dedent: "apm_py_dedent",
+block := name . ":" . indent . (name . newline)* . dedent;
+
+custom_action {
+    indent:  "apm_py_indent",
+    dedent:  "apm_py_dedent",
     newline: "apm_py_newline",
-    special_tab: "myfunc"
 }
+
+parser { . block . ; }
+
+. { spc }
 ```
 
-**FEATURES**
+## A tour of the rest
+
+Variables, a set the grammar learns as it goes, a scope those members are
+forgotten at, logic, a branch, order-free members, and a config change.
 
 ```parser
-# 1. Variables
+# A tour: variables, a learned set, scopes, logic, if, perm and config.
+program tour;
 
-# Text Type
-# Holds a literal text (aka string).
-# Can be initialized
+config { "ast-node-text" : FALSE };
 
-texval y;
-texval z = "Hello World";
+alias q  \x22;
+alias max 8;
 
-# Number Value
-# Holds 0 or a Positive number. (Negative Numbers are not supported).
-# Can be initialized.
+digit = <0:9>;
+alpha = <a:zA:Z>;
+ident = (alpha | "_") . (alpha | digit | "_")*;
+num   = digit+;
 
-numval a;
-numval b = 50;
-numval c =  0; # range
+numval limit  = 8;
+texval banner = "tour";
 
-# Semantic Type
-# A set of text values. Each time you assign a value to it, if the value is different to all the values
-# in the set then the value is added to the set.
-# It can be used in parsing, it does a exact match of the text against all its values in the set.
-# Can not be used like a regular Text or Number type.
-# Can be initialized with a list of text only;
+semvar declared;
 
-semval d;
-semval e = "Cat";
-semval f = # all values are added to the set
-    "Cat",
-    "Dog",
-    "Rat",
-    "Bat";
+scope blk
+    begin = "{";
+    end   = "}";
 
-#2. Assignment of Variables
+# capture, then require the same text again
+repeat := (ident => texval w) . "=" . (ident => w);
 
-texval x;  # global variable
+# a producer into a numval, then a test over it
+short  := (num::char_count => numval n) . {n < limit};
 
-A = "bone" => x; # => grammar assigns what was parsed to its variable
-B = "bone" => texval y; # local variable definition is supported. Variable exists only in the action.
-C = "bone" => texval z z; # a variable named again MATCHES the text it holds
+# add to the set as it parses, then match any member
+declare := "var" . (ident => declared) . ";";
+use     := declared;
 
-#3. Conversion
+# a bounded counter, and a run of characters checked one at a time
+field   := alpha-1:max;
+quoted  := q . char*::per::not(q) . q;
 
-numval a;
+# order-free members, each separated by the skip
+attrs   := perm[(ident .) (num .)];
 
-A = "2" => a;
-B = a; # a is auto-converted to text and parsed for an exact match
-C = "x"-a; # a is auto-converted to number applied to counter.
-D = tex::icase(a::to_text()) "x"-(a::to_number()); # explicit conversion
+# branch on whether something parses
+maybe   := ident . if (num) ["!" | "?"];
 
-# 4. Permutation
-# The parser can match a series of actions in any order using permutations.
+body    := blk::begin . (declare | use | repeat)* . blk::end;
 
-A = perm["A" "B" "C"] "D";
+parser { . (body | short | field | quoted | attrs | maybe) . ; }
 
-# 5. Logic Block
-# Logic block allows the specification of non-parsing logic which can be mathematical logic
-A = {5 * 5 == 20};
-B = char => numval x char => numval y {y = 15; x * y == 65};
-
-# 6. IF statement
-# Parsing can branch conditionally
-
-numval x = 0
-
-A = char => x; # auto-conversion to numval
-B = C if({x == 1}) [T|F] D; # if logic is true then parse T else parse F
-E = G if(M) [T | F]; # if M parses, then parse T else parse F
-H = I if(M) [T];  # if M parses, then parse T
-J = K if(M) [|F]; # if M fails to parse then parse F
-
-# 7. Text Functions
-
-A = tex::order("ABC"); # similar to perm for syntactic objects
-B = tex::oneof("ABC"); # a single character from the text
-C = tex::icase("ABC"); # exact but with any case
-
-# 8. Parser Result Functions
-
-name = <A:Za:z>+;
-t1 = name::is("Fred"); # or name => texval x x::is("Fred"); | checks if the result equals "Fred"
-t2 = name::subkind("Fr"); # checks if result has substring called "Fr"
-t3a = name::part(1); # section the result; returns first character; 1 index based
-t3b = name::part(1:4); # section the result; returns first to fourth character
-t3c = name::part(2+); # section the result; returns second to last character
-t3d = name::part(1)::is(\x20); # chain functions
-t3e = name::part(3:4)::is("ed"); # chain functions
-t4a = name::not("Amber"); # checks that the result is not text "Amber"
-t4b = char::not("A"); # your checks should be relative to the size
-t4c = char::not(tex::oneof("hello")); # can pass text functions as parameters
-t4d = char*::not("This"); # no difference with counters
-
-# 9. Config Settings
-
-# Some config settings can be set within the language itself.
-
-config {
-    .error {
-        .format: "%PARSER %MESSAGE custom error",
-        .sequencer_message: "unknown character",
-        .syntactic_message: "unknown syntax"
-    },
-    .charseq_buffer_size: 1024,
-    .parser_type: .BUFFERED,
-}
-
-
+. { spc, nl }
 ```
+
+Worth picking out:
+
+- `(ident => texval w) . "=" . (ident => w)` captures text and then **requires
+  the same text again**. This is the thing a plain grammar cannot do.
+- `declared` is a [semvar](variable.md): `(ident => declared)` adds to the set
+  as the parse goes, and writing `declared` afterwards matches any member.
+- `blk::begin` and `blk::end` move a depth, and leaving the block forgets what
+  was declared inside it.
+- `char*::per::not(q)` asks the question of **each** character rather than of
+  the whole run. Without `per` it would compare the entire run against one
+  quote character.
+- `alpha-1:max` takes a bound from an [alias](alias.md), so the limit is named
+  in one place.
+
+:::{seealso}
+[Quick Reference](quick_reference.md) has every feature on one page.
+:::

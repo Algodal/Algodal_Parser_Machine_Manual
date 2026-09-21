@@ -20,10 +20,18 @@ Parser Machine Language (APML)**.
 
 - Generates fast, portable LL parsers in C99
 - Drops into any C or C++ project, and binds to any language that supports C ABI
-- Provides a plugin-like feature via `custom_actions` for users to handle parsing extremely complex languages.
-- Semantic predicates via `sevmval` variables
+- **Scannerless** — lexing and parsing share one context, so context-heavy and
+  whitespace-sensitive languages are no longer a wall
 - Reads UTF-8 text and builds the AST for you — no extra code needed
-- Simple, keyword-based syntax
+- **AST maps** reshape the tree, so the grammar is written for clarity rather
+  than for the shape you happen to need
+- **Pratt parsing** with binding powers, and left recursion written directly
+- Semantic predicates via `semvar` sets, with `scope` for block scoping
+- Text and number variables, logic blocks and `if`, for grammars that decide
+- **Custom actions** let a rule body live in your C code, for things no grammar
+  can state — Python indentation, for one
+- **Linking** calls into another parser program, resolved when it loads
+- Simple, keyword-based syntax with a short list of reserved words
 - Multiple parsers can run in the same program, across threads
 - Code is compatible for all platforms you can build C99 code on (minus dependency requirements)
 - Syntax highlighting available for VSCode
