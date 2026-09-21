@@ -130,6 +130,25 @@ anywhere invents text. Without it you get a node with a name and no value.
 Because the node is emitted at the end of the body, a variable it reads has
 already been written by the time it runs.
 
+## Everything is reachable
+
+A map names a maker the way it is **written**. An action by its name, a literal
+by itself, a character block by the block text, a linked call by the whole
+qualified name:
+
+```parser
+X := (<a:z> . B) -> (B: (<a:z>));
+Y := (javascript::stmt . B) -> (B: (javascript::stmt));
+```
+
+There is no kind of maker a map cannot point at.
+
+:::{note}
+A character block only *makes* a node when `ast-node-char` is on — see
+[Config Settings](config_settings.md). A map can name it either way, but with
+that setting off there is no node to place.
+:::
+
 ## Labels — telling two of the same apart
 
 A plain name already means all of them, so you only need a label when two units
