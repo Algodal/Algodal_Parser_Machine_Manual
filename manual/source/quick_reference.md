@@ -6,7 +6,7 @@ A one-page summary of every APML feature. Each entry links to its full chapter.
 
 ```parser
 program MyParser;         # name the module
-program "Nice Name" mp;   # ... with a display name
+program "algodal" json;   # ... in two parts; the full name is algodaljson
 ```
 
 ## Actions — [details](language.md)
@@ -113,24 +113,22 @@ A+::iter_steps;          # times a counter ran; 1 if not counted, 0 if none
 # a producer may be compared against a NUMBER
 name::char_count::is(3);      # exactly three characters
 name::to_num::is(200);        # the value 200 -- so "0200" matches too
-name::char_count::is(limit);  # ... or against a numval
+name::char_count::is(limit);  # ... or against a numvar
 
-# per: ask the rest of the chain of each repetition
-char*::per::not("x");
 ```
 
 ## Variables — [details](variable.md)
 
-Local to one action, or global to the whole parse. A `texval` holds a span of
-text; a `numval` holds a number.
+Local to one action, or global to the whole parse. A `texvar` holds a span of
+text; a `numvar` holds a number.
 
 ```parser
-texval greeting = "Hello";   # global, set before parsing starts
-numval limit = 3;            # global number
+texvar greeting = "Hello";   # global, set before parsing starts
+numvar limit = 3;            # global number
 
-A := (word => texval x) x;   # capture, then require the same text again
-B := (word => texval x) (word => x);   # declare once, assign again
-C := (n::to_num => numval v);          # a producer fills a numval
+A := (word => texvar x) x;   # capture, then require the same text again
+B := (word => texvar x) (word => x);   # declare once, assign again
+C := (n::to_num => numvar v);          # a producer fills a numvar
 ```
 
 A variable must be assigned on **every** path that reaches a read, or the
@@ -175,7 +173,7 @@ succeeds or fails, and consumes nothing either way. `{{ ... }}` is *final* — i
 runs for what it does, always holds, and nothing may follow it in the grammar.
 
 ```parser
-A := (word => texval x) {x == "cat"};      # a test
+A := (word => texvar x) {x == "cat"};      # a test
 B := "a" {{9 => n}};                       # a deed, always holds
 ```
 
@@ -207,7 +205,7 @@ permutations and `if` conditions alike, ends the run, and its message becomes
 the run's error.
 
 ```parser
-z := (word => texval x) {x == "cat" OR error("only cats here")};
+z := (word => texvar x) {x == "cat" OR error("only cats here")};
 ```
 
 Because `OR` short-circuits, that reports nothing for a cat and stops for a dog.
@@ -315,11 +313,28 @@ custom_action { indent: "apm_py_indent" }
 (A . B) -> (A: (B))       # A becomes B's parent
 (A . B) -> (A)            # B is discarded
 (A . B) -> (A [B])        # B's children take B's place
-(A => texval v) -> (A node("Extra", v))    # a node nothing matched
+(A => texvar v) -> (A node("Extra", v))    # a node nothing matched
 ('a'A . 'b'A) -> ('b' 'a')                 # labels tell two apart
+```
+
+## System Functions — [details](system_function.md)
+
+```parser
+error("only cats here")     # stop the parse; nothing else is tried
 ```
 
 ## Keywords — [details](keywords.md)
 
 Every word the language spells out is reserved and cannot be a declared name.
 Config and feature keys are quoted strings, so they are exempt.
+
+## How to Use — [details](how_to_use.md)
+
+```sh
+apma mylang.apm -o mylang.apmb
+```
+
+```c
+ApmBinary   program = ApmReadBinaryFile("mylang.apmb", &ok);
+ApmVmResult result  = ApmVmRun(program, config);
+```

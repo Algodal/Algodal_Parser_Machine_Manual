@@ -2,13 +2,13 @@
 
 APM reads UTF-8, and a "character" means one **grapheme cluster** — what a
 reader would point at as a single character, however many bytes or code points
-it takes. There are three ways to match one: the `char` action, a **character
+it takes. There are three ways to match one: the `char` function, a **character
 block**, or a **character literal**.
 
-## The `char` action
+## `char`
 
-`char` matches any one character, as long as there is text left. It takes no
-parentheses.
+`char` is a built-in **function**, not an action of yours. It matches any one
+character, as long as there is text left, and it takes no parentheses.
 
 ```parser
 A = char; # parses a single utf-8 character

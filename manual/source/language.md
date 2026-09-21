@@ -5,7 +5,26 @@ language uses an *EBNF*-like syntax for grammar rules — called **actions** —
 together with extra syntax for matching characters, for deciding on context, and
 for shaping the abstract syntax tree.
 
-Here is a small but complete parser:
+## The smallest parser
+
+Two actions and a `parser` block. That is a working parser.
+
+```parser
+A = "cat";
+B = "dog";
+pet := A | B;
+
+parser { pet; }
+```
+
+Over `catdog` that gives two root nodes, a `pet` for each, with the matching
+action underneath.
+
+Notice there is no `program` line. It is **optional** — a grammar that stands
+alone does not need a name. You want one as soon as another module might
+[link](module.md) to yours, because the name is how it is referred to.
+
+## A slightly bigger one
 
 ```parser
 # A simple parser
@@ -115,8 +134,8 @@ APML has three types.
 
 | Type | Keyword | Holds |
 | :--- | :--- | :--- |
-| **Text** | `texval` | a sequence of characters |
-| **Number** | `numval` | `0` or a positive number; negatives and decimals are not supported |
+| **Text** | `texvar` | a sequence of characters |
+| **Number** | `numvar` | `0` or a positive number; negatives and decimals are not supported |
 | **Semantic** | `semvar` | a *set* of text values, matched like an option of its members |
 
 :::{seealso}
@@ -124,15 +143,51 @@ A parse result is not a type of its own. `=>` assigns one to a variable, and
 the variable's type says what is kept. See [Variables](variable.md).
 :::
 
-## Range
+## Literals
 
-A **range** specifies a start position and an end position and applies an effect across that span. It is written with `:`.
+Two kinds of literal appear in a grammar.
+
+A **string-literal** is text in double quotes. It matches those characters
+exactly:
 
 ```parser
-D = \x41:5A; # characters A through Z
+A = "cat";
 ```
 
-Ranges appear throughout the language, in [Character](character.md) literals and blocks, [Counter](counter.md) repetitions, and [Parser Result Function](parser_result_function.md) sectioning with `::part`.
+A **char-literal** names a single character by its code, in hex with `\x` or by
+code point with `\u`:
+
+```parser
+B = \x41;      # A
+C = Ω;    # Greek capital omega
+```
+
+:::{important}
+APM reads **UTF-8**, and a hex literal must be valid UTF-8. `\x41` is the
+single byte `A`, which is fine. A lone `\xC3` is not — it is the first byte of
+a two-byte sequence and means nothing on its own.
+
+For anything above 127, `\u` is the safer way to say it: give the code point
+and let the compiler write the bytes.
+:::
+
+## Char-Range
+
+A **char-range** parses a single character out of a span of codes. It is
+written with `:`, and it is what goes inside a
+[character block](character.md):
+
+```parser
+D = <A:Z>;        # one character, A through Z
+E = \x41:5A;      # the same, by code
+```
+
+A char-range matches **one** character. That is what separates it from a
+[counter](counter.md), which also uses `:` — a counter's `:` bounds how many
+times something runs, a char-range's says which characters are allowed.
+
+The same `:` sections a result in
+[`::part(1:4)`](parser_result_function.md).
 
 ## Reserved Words
 
@@ -142,4 +197,7 @@ action, a variable, or anything else you declare. The list is short — see
 
 ## A Note on "Text"
 
-The word *text* can mean two things. **Incoming text** is the content being parsed into an AST. **Parsing text** is any grammar or parameter you write in APML. The context makes clear which one is meant.
+The word *text* can mean two things. **Incoming text** (also known as a buffer)
+is the content being parsed into an AST. **Parsing text** (also known as a
+string-literal, a texval, or just text) is any grammar or parameter you write
+in APML. The context makes clear which one is meant.

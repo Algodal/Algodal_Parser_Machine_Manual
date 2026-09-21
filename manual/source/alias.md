@@ -31,7 +31,7 @@ alias width 4;
 
 field = char-width;          # a counter bound
 check = {x < width};         # logic
-numval w = width;            # a global's initial value
+numvar w = width;            # a global's initial value
 ```
 
 Writing `A = width;` is refused, for the same reason writing `A = 4;` is:

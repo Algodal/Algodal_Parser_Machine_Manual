@@ -74,32 +74,67 @@ question again:
 ```parser
 exactly3 = name::char_count::is(3);
 two_hundred = number::to_num::is(200);   # so "0200" matches too
-within = name::char_count::is(limit);    # ... or against a numval
+within = name::char_count::is(limit);    # ... or against a numvar
 ```
 
 Or captured into a variable:
 
 ```parser
-C := (n::to_num => numval v);
+C := (n::to_num => numvar v);
 ```
 
-## `per` — ask of each repetition
+## Where the counter goes
 
-`per` leads a chain on a **counted** unit and turns the question around: the
-rest of the chain is asked of each repetition rather than of the whole run.
+The counter can sit on either side of the chain, and the two mean different
+things.
 
 ```parser
-q = char*::per::not(\x22);   # every character must not be a quote
+a = char*::not(q);   # is the WHOLE run different from q?
+b = char::not(q)*;   # is EACH character different from q?
 ```
 
-Without it, `char*::not(\x22)` asks whether the *whole run* differs from a
-single quote, which is almost never the question.
+`b` is almost always what you want. Put the counter **after** the chain and the
+question is asked of every repetition; put it before and it is asked once, of
+everything that matched.
 
-## Semvar and scope calls
+```parser
+alias q \x22;
+quoted := q . char::not(q)* . q;   # a quoted string
+```
 
-The same `::` is how a [semvar](variable.md) and a [scope](variable.md) are
-reached — `kind::first`, `blk::begin`, `blk::end`.
+## On a variable, not just a match
+
+A result function does not have to follow a match. It works on a
+[`texvar`](variable.md) just as well, because a texvar holds a span of text and
+that is all these functions need:
+
+```parser
+A := (word => texvar x) . {x::char_count == 3};
+B := (word => texvar x) . x::subkind("ed");
+```
+
+That is often the clearer way to write a check that has to happen some distance
+from where the text was matched.
+
+## The other `::` — semvar and scope
+
+The same `::` reaches a [semvar](variable.md) and a
+[scope](variable.md), and those calls are a **different set** from the ones
+above. They are not asking about text that just matched; they are asking about
+a set or a depth.
+
+| Call | On | Meaning |
+| :--- | :--- | :--- |
+| `kind::first` | a semvar | match the **earliest** member added, not the longest |
+| `blk::begin` | a scope | run the begin grammar and go one deeper |
+| `blk::end` | a scope | come back out, and forget what was added inside |
+| `set::is(t)` `set::not(t)` `set::clear` | a semvar, **inside a logic block** | is `t` a member, is it not, empty the set |
+
+So `name::first` and `name::is("x")` read alike and are not alike: on a matched
+unit `is` compares the text, on a semvar inside a logic block it asks about
+membership.
 
 :::{seealso}
-Every function named here is a [reserved word](keywords.md).
+Every function named here is a [reserved word](keywords.md). To stop the parse
+rather than fail a match, see [System Functions](system_function.md).
 :::

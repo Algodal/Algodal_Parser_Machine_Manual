@@ -32,6 +32,9 @@ Anything you leave out is **discarded**:
 paren := ("(" . expr . ")") -> (expr);   # the brackets do not survive
 ```
 
+A map never changes what was **matched**. It only decides what is kept and
+where it hangs.
+
 ## Making one a parent
 
 `A: (B C)` keeps `A` as a node and puts `B` and `C` underneath it instead of
@@ -42,72 +45,138 @@ pair := (name . number) -> (name: (number));
 deep := (a . b . c) -> (a: (b: (c)));
 ```
 
+## A name means every unit of that name
+
+This is the rule the whole map works by, and it is worth saying plainly: a name
+in a map means **every unit of that name in the body**, and they all go to the
+same place.
+
+```parser
+X := (A . A . B) -> (B: (A));
+```
+
+Over `a a b`, both `A`s land under `B`. A counter is the same idea — one
+instruction making many nodes, all going to the one slot.
+
+Used as a **parent**, the name still means all of them, so the most recent one
+is the one that takes the children:
+
+```parser
+X := (A . A . B) -> (A: (B));   # the second A is B's parent
+```
+
+That is not a mistake to be reported. If you meant one of them in particular,
+label it.
+
+## Reaching into a choice
+
+A map can name something that only *one* alternative produces:
+
+```parser
+X := (A . (B | C) . D) -> (A: (C));   # C when C matched; nothing when B did
+```
+
+Or it can name the **choice itself**, when either side is wanted in the same
+place. This is the form to reach for when a symbol appears in every
+alternative:
+
+```parser
+X := (A . (B | C) . D) -> (A: ((B|C)) D);   # whichever one matched
+```
+
+Writing `(B|C)` says "the thing this choice produced", so the map does not have
+to be written twice.
+
 ## `[A]` — lift a node's children
 
 Square brackets **ascend**: whatever `A` held takes `A`'s place, and `A` itself
-is dropped.
+is dropped. It moves one level; what those children held stays put.
+
+Given `P := A . B;` the difference is:
 
 ```parser
-up := (name . pair) -> (name [pair]);
+X := (P . C) -> (C: (P));     # (X (C (P (A) (B))))    P stays
+X := (P . C) -> (C: ([P]));   # (X (C (A) (B)))        P goes, A and B arrive
+X := (P . C) -> ([P] C);      # (X (A) (B) (C))        at the top
+X := (P . C) -> (C [P]);      # (X (C) (A) (B))        keeping its place
 ```
 
-It moves one level, it does not flatten. What `pair`'s children held stays
-where it is.
+An ascended node keeps the **position** it had among its siblings; only the
+level goes. This is how you flatten one wrapper that the grammar needed but the
+tree does not.
+
+`[A]` cannot be a parent — there would be no `A` left to hang anything on.
 
 ## `node("Name")` — a node nothing matched
 
 Every other entry in a map points at something the body already produced. This
-one is made *because the map asks for it*:
+one is made **because the map asks for it**.
 
 ```parser
-made := (name => texval v) -> (name node("Extra", v));
+made := (name => texvar v) -> (name node("Extra", v));
 ```
 
-The second argument is a variable whose captured text becomes the node's value.
-Without it you get a node with a name and no value.
-
-## `(C | D)` — either one, in the same place
-
-When two alternatives are wanted in the same slot, name the choice rather than
-one side of it:
+Once made it is a node like any other: it can be a parent, it can be a child,
+and it nests.
 
 ```parser
-item := (label . (number | word)) -> (label: (number | word));
+wrap := (a . b) -> (node("Group"): (a b));   # a made node as the parent
 ```
+
+The second argument names a variable, and the text that variable holds becomes
+the node's value — a span of the input, like every other node's value. Nothing
+anywhere invents text. Without it you get a node with a name and no value.
+
+Because the node is emitted at the end of the body, a variable it reads has
+already been written by the time it runs.
 
 ## Labels — telling two of the same apart
 
-When a body uses the same action twice, a label says which one you mean. A
-label is written in single quotes, **directly against** the unit with no space:
+A plain name already means all of them, so you only need a label when two units
+of one name must go to **different** places. A label is written in single
+quotes, directly against the unit with no space:
 
 ```parser
 swap := ('a'name . 'b'name) -> ('b' 'a');
 ```
 
-Labels exist only for the map they appear in. They never reach the parser.
+A labelled unit answers **only** to its label, which is what leaves the plain
+name free for the other one. Labels exist only for the map they appear in and
+never reach the parser.
 
 :::{important}
-A map may place each unit **once**. Naming the same thing in two places is
-refused (`E-astmap-twice`) — a node has one parent, and a map that asked for
-two would have to copy it.
+A map may place each thing **once**. Naming the same unit in two places is
+refused — a node has one parent, and a map that asked for two would have to
+copy it.
 :::
 
 ## Renaming with `node_id`
 
-A node is named after the action that made it. To save it under a different
-name — one the language reserves, or one that is not an identifier at all — use
-a `node_id` block:
+A node is named after the action that made it. `node_id` changes the name it is
+**saved** under, while the grammar goes on calling the action by its label.
 
 ```parser
 node_id {
     perm_unit: "perm",
-    Label: "saved name",
+    ident_node: "identifier",
 }
 ```
 
-The grammar goes on referring to the action by its label; only the name
-recorded in the tree changes. Each action may be renamed once, and no two
-actions may end up saved under the same name.
+The reason this exists: **when the name you want is a keyword.** Every word the
+language spells out is [reserved](keywords.md), so no action can be called
+`perm`, `char` or `end`. Label the action something else and use `node_id` to
+save it under the name you actually wanted.
+
+APM's own grammar does exactly that — its rule for a permutation is labelled
+`perm_unit` and saved as `perm`.
+
+The saved name must be a **usable identifier** — letters, digits and
+underscore, not starting with a digit. Whatever reads the tree will have to
+write that name in its own source, so a name with a space or a dash in it is
+refused.
+
+Each action may be renamed once, and no two actions may end up saved under the
+same name.
 
 :::{seealso}
 Whether literals become nodes at all, and whether adjacent ones merge, is

@@ -5,6 +5,10 @@ AST in the same pass. There is no token stream in between, and no token list to
 collect — a charseq action is the nearest thing to a token, and it is already a
 node in the tree.
 
+The `parser { }` block is itself **syntac**: every run of it produces a root
+node, and those roots are the whole tree. `result.nodes` is the list of them,
+in the order they were parsed.
+
 The parser block names the **start grammar** — the single grammar the parser begins from. Parsing runs it from the front of the input; when it returns a match and text remains, the parser runs it **again** from where it left off, and so on until the input is consumed or a run matches nothing. Each run is one top-level block. There is exactly one start grammar.
 
 ```parser

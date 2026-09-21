@@ -15,6 +15,7 @@ Get it here: https://algodal.itch.io/algodal-parser-machine
    :caption: Getting Started
 
    overview
+   how_to_use
    language
    keywords
    module
@@ -47,6 +48,7 @@ Get it here: https://algodal.itch.io/algodal-parser-machine
    if_statement
    text_function
    parser_result_function
+   system_function
    custom_action
    config_settings
 

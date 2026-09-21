@@ -8,8 +8,8 @@ There are two variable types and one set type:
 
 | Keyword | Holds |
 | :--- | :--- |
-| `texval` | a span of text |
-| `numval` | a number, `0` upward — no negatives, no decimals |
+| `texvar` | a span of text |
+| `numvar` | a number, `0` upward — no negatives, no decimals |
 | `semvar` | a **set** of text the grammar builds and later matches against |
 
 ## Capturing with `=>`
@@ -18,9 +18,9 @@ Inside an action, `(unit => target)` runs the unit and keeps what it matched.
 The target is either a new declaration or a variable already in hand:
 
 ```parser
-A := (word => texval x) x;             # capture, then require the same text again
-B := (word => texval x) (word => x);   # declare once, assign again
-C := (n::to_num => numval v);          # a producer fills a numval
+A := (word => texvar x) x;             # capture, then require the same text again
+B := (word => texvar x) (word => x);   # declare once, assign again
+C := (n::to_num => numvar v);          # a producer fills a numvar
 ```
 
 A variable must be assigned on **every** path that reaches a read, or the
@@ -36,8 +36,8 @@ A global is declared at the top level and lives for the whole parse. It must be
 given an initial value:
 
 ```parser
-texval greeting = "Hello World";
-numval limit = 50;
+texvar greeting = "Hello World";
+numvar limit = 50;
 ```
 
 The initial value is set once, before any input is read — so writing `greeting`
@@ -51,7 +51,7 @@ activation its own copy, so an outer value is never disturbed by an inner one:
 
 ```parser
 w = <a:z>;
-rec := (w => texval x) rec? x;   # an even-length palindrome
+rec := (w => texvar x) rec? x;   # an even-length palindrome
 ```
 
 ## Semvar — a set the grammar learns
@@ -98,7 +98,7 @@ added inside. A set that is not bound to a scope never forgets.
 
 :::{seealso}
 Logic blocks read these values — see [Logic Block](logic_block.md) — and an
-[IF statement](if_statement.md) branches on them. `texval`, `numval`, `semvar`
+[IF statement](if_statement.md) branches on them. `texvar`, `numvar`, `semvar`
 and `scope` are [reserved words](keywords.md), as are `begin`, `end`, `first`
 and `clear`.
 :::

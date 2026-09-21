@@ -11,7 +11,7 @@ if (cond) [| else]          # else only
 ## A logic condition
 
 ```parser
-numval x = 0;
+numvar x = 0;
 
 A := (char::to_num => x) . if ({x == 1}) [T | F];
 ```

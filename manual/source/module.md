@@ -13,11 +13,20 @@ the very top of the source.
 program MyParser;
 ```
 
-A module may also carry a **display name**, written before the identifier:
+A module's name may be written in two parts: a **preface** in quotes, then the
+name the grammar uses.
 
 ```parser
-program "Nice Name" mp;
+program "algodal" json;
 ```
+
+The full name is the two run together — `algodaljson` — and that is what the
+module is actually called. The preface is ignored by the grammar; the second
+part is the handle a `link` writes and a call goes through. It is there so a
+family of modules can share a prefix without every grammar that uses them
+having to spell it out.
+
+`program algodaljson;` declares exactly the same module.
 
 ## Linking Modules
 
@@ -39,6 +48,16 @@ parser {
 A linked action is always reached as `module::action`. The qualified name is
 required, not decoration — it is what tells a call in `p1` apart from a local
 action of the same name.
+
+**Linking gives you the other module's named actions.** Anything it defines
+with a name, you can call. There is nothing to export and nothing to declare on
+either side: the name is the interface.
+
+```parser
+link "algodal" json;        # the same as `link algodaljson;`
+
+value := json::value;       # call a named action of it
+```
 
 Link more than one module by repeating the keyword:
 
@@ -65,7 +84,9 @@ That is the trade for being able to compile modules separately and combine them
 later.
 
 :::{seealso}
-The `parser` block that drives a module is described in [Parser](parser.md).
+To build the VM into your own program and run a module, see
+[How to Use](how_to_use.md). The `parser` block that drives a module is
+described in [Parser](parser.md).
 A module's own name and every linked handle share the name space actions live
 in, so neither may be a [reserved word](keywords.md).
 :::

@@ -15,6 +15,9 @@ stmt = "(" . "A" . ")";
 At every `.`, everything in the config list is matched repeatedly until none of
 them matches any more. Then the parse carries on.
 
+**What the skip matches never reaches the AST.** It is consumed and dropped, so
+whitespace and comments do not turn up as nodes you then have to ignore.
+
 ## Why it is written, not inserted
 
 A tool that skipped whitespace everywhere could not describe a token. Because

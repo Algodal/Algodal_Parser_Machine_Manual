@@ -29,7 +29,7 @@ A bound may be a **name** as well as a number, which is how a grammar counts
 something it only learns while parsing:
 
 ```parser
-numval width = 4;
+numvar width = 4;
 field = char-width;   # exactly `width` characters
 ```
 

@@ -31,13 +31,22 @@ Higher numbers bind tighter, so `*` takes its operands before `+` gets a look.
 
 ## Associativity is the gap, not a keyword
 
-There is no `left` or `right` to write. The relationship between the two
-numbers **is** the associativity:
+There is no `left` or `right` to write. The relationship between an operator's
+two numbers **is** its associativity.
 
-| | |
-| :--- | :--- |
-| `r = l + 1` | left-associative — `a - b - c` is `(a - b) - c` |
-| `r = l - 1` | right-associative — `a ^ b ^ c` is `a ^ (b ^ c)` |
+In APM, an operator grabs what is to its left when the left number is high
+enough to beat what is already holding it, and it keeps going to the right
+while the right number stays above what follows. So:
+
+| Written | Means | Because |
+| :--- | :--- | :--- |
+| `r = l + 1` | **left**-associative — `a - b - c` is `(a - b) - c` | the right side binds one step tighter, so the second `-` cannot reach back and take `b` away from the first |
+| `r = l - 1` | **right**-associative — `a ^ b ^ c` is `a ^ (b ^ c)` | the right side binds one step looser, so the second `^` wins `b` |
+| `r = l` | left-associative, the same as `l + 1` in practice | a tie goes to whoever got there first |
+
+The gap is always one step. Bigger gaps between the two numbers of the **same**
+operator buy nothing; it is the gap between *different* operators that sets
+precedence.
 
 ## Prefix and postfix are a zero
 
@@ -81,6 +90,34 @@ group := "(" . expr . ")";
 The first alternative that is not an operator arm is the **operand** — here
 `atom`. The rest are the arms, and each must name an operator the table
 declares.
+
+A `feat` binding applies to the action itself, so **every call site** parses it
+that way. It is the right choice when the rule *is* an expression rule and
+there is no other way you would ever want it read.
+
+## Binding at the call site
+
+The other way round is to leave the rule unbound and pick the table where you
+call it, with `table::-rule`:
+
+```parser
+number = <0:9>+;
+
+bindpow bp {
+    "+" : (50, 51) ;
+    "*" : (60, 61) ;
+}
+
+expr := number | expr . "+" . expr | expr . "*" . expr;
+
+top := bp::-expr;   # parse expr under bp, here
+```
+
+Over `2 + 3 * 4` that gives `2 + (3 * 4)`.
+
+Use this when the same rule should be read with different precedences in
+different places, or when you want the grammar to stay readable as a plain
+recursive rule and the precedence to be a decision made elsewhere.
 
 :::{important}
 Every operator the rule writes must appear in the table, and every operator in

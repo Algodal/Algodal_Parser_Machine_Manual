@@ -1,48 +1,83 @@
 # Logic Block
 
-A logic block lets you specify non-parsing logic — typically mathematical logic — inside an action. It is written between curly braces `{}`. The block succeeds when its logic evaluates to true and fails otherwise, so it can control whether an action parses.
+A logic block tests **values** rather than text. It reads no input and moves no
+cursor: it succeeds or it fails, and consumes nothing either way. That is what
+lets a grammar decide something instead of merely matching it.
+
+It is written between curly braces.
 
 ```parser
 A = {5 * 5 == 20};
-B = char => numval x char => numval y {y = 15; x * y == 65};
+B = (char => numvar x) . (char => numvar y) . {y = 15; x * y == 65};
 ```
 
-In action `A`, the logic `5 * 5 == 20` is false, so `A` fails. In action `B`, a character is parsed and assigned to `x`, `y` is set to `15`, and the block succeeds only if `x * y == 65`.
+`A` fails, because `5 * 5 == 20` is false. In `B` two characters are captured,
+`y` is set to `15`, and the block succeeds only if `x * y == 65`.
+
+## What a block answers
+
+A logic block answers **true or false**, and true is the default.
+
+Statements are separated by `;`, and the **last one's value is the block's
+answer**. A statement that produced no value — an assignment, a cleared set —
+is a deed rather than an answer, and a deed is no reason to fail. So a block
+whose last statement is an assignment holds.
+
+```parser
+{x == "cat"}          # answers the comparison
+{y = 15; x * y == 65} # a deed, then an answer
+{y = 15}              # only a deed -- holds
+```
+
+## The final block
+
+`{{ ... }}` is a **final block**. It runs for what it does, and its result is
+not checked — it always holds.
+
+```parser
+B := "a" . {{9 => n}};
+```
+
+Use it when the point is the effect rather than the verdict: setting a
+variable, clearing a set, counting something. Nothing may follow a final block
+in the grammar, because there is no outcome for the rest to depend on.
+
+The difference in one line: an ordinary block can fail the action it sits in, a
+final block cannot.
 
 ## Operators
 
-Precedence follows C, tightest binding first: `NOT`, then `*` `/`, then `+` `-`,
-then `<` `<=` `>` `>=`, then `==` `!=`, then `AND`, then `OR`. Brackets override
-it. Division by zero is `0`, and `a - b` clamps at `0` rather than wrapping.
+Precedence follows C, tightest binding first: `NOT`, then `*` `/`, then `+`
+`-`, then `<` `<=` `>` `>=`, then `==` `!=`, then `AND`, then `OR`. Brackets
+override it.
+
+```parser
+NOT a
+a * b   a / b    # division by zero is 0
+a + b   a - b    # a - b clamps at 0 rather than wrapping
+a < b   a <= b   a > b   a >= b
+a == b  a != b
+a AND b
+a OR b
+TRUE  FALSE      # one and zero
+```
+
+`AND` and `OR` **short-circuit**, the way C's `&&` and `||` do: the right side
+is not evaluated when the left has already settled the answer.
 
 Text compares by bytes, and `==` and `!=` are the only operators it has —
 arithmetic over text is refused when the grammar is validated, not at run time.
 
-`AND` and `OR` **short-circuit**, the way C's `&&` and `||` do: the right side is
-not evaluated when the left side has already settled the answer.
-
-## Stopping the parse with `error()`
-
-Every other failure in the machine means *"this did not match here"*, and it
-sends whatever was trying alternatives on to the next one. `error("...")` means
-something else: the input is wrong, and there is nothing else to try.
+## Asking about a semvar
 
 ```parser
-z := (word => texval x) {x == "cat" OR error("only cats here")};
+set::is(t)     # is t a member?
+set::not(t)    # is it not?
+set::clear     # empty the set -- a deed, so it holds
 ```
 
-It travels straight out of options, series, counters, permutations and `if`
-conditions rather than being retried around, ends the run, and the message it
-was given becomes the run's error. Because `OR` short-circuits, the example
-above says nothing at all for a cat and stops for a dog.
-
-`{{ ... }}` does not absorb it either. A final block always holds — but holding
-is an *answer*, and `error()` does not give one.
-
-:::{note}
-A message is text. `error(5)` is refused when the grammar is validated.
-:::
-
 :::{seealso}
-Logic blocks are also used as the condition of an [IF statement](if_statement.md), and they read values captured into [Variables](variable.md) with `=>`.
+A logic block is also the condition of an [IF statement](if_statement.md), and
+it reads values put into [Variables](variable.md) with `=>`. To stop the parse
+outright rather than fail a match, see [System Functions](system_function.md).
 :::

@@ -153,20 +153,21 @@ alpha = <a:zA:Z>;
 ident = (alpha | "_") . (alpha | digit | "_")*;
 num   = digit+;
 
-numval limit  = 8;
-texval banner = "tour";
-
-semvar declared;
+numvar limit  = 8;
+texvar banner = "tour";
 
 scope blk
     begin = "{";
     end   = "}";
 
-# capture, then require the same text again
-repeat := (ident => texval w) . "=" . (ident => w);
+# bound to blk, so leaving the block forgets what was declared inside it
+semvar declared {"scope": blk};
 
-# a producer into a numval, then a test over it
-short  := (num::char_count => numval n) . {n < limit};
+# capture, then require the same text again
+repeat := (ident => texvar w) . "=" . (ident => w);
+
+# a producer into a numvar, then a test over it
+short  := (num::char_count => numvar n) . {n < limit};
 
 # add to the set as it parses, then match any member
 declare := "var" . (ident => declared) . ";";
@@ -174,7 +175,7 @@ use     := declared;
 
 # a bounded counter, and a run of characters checked one at a time
 field   := alpha-1:max;
-quoted  := q . char*::per::not(q) . q;
+quoted  := q . char::not(q)* . q;
 
 # order-free members, each separated by the skip
 attrs   := perm[(ident .) (num .)];
@@ -191,15 +192,17 @@ parser { . (body | short | field | quoted | attrs | maybe) . ; }
 
 Worth picking out:
 
-- `(ident => texval w) . "=" . (ident => w)` captures text and then **requires
+- `(ident => texvar w) . "=" . (ident => w)` captures text and then **requires
   the same text again**. This is the thing a plain grammar cannot do.
 - `declared` is a [semvar](variable.md): `(ident => declared)` adds to the set
   as the parse goes, and writing `declared` afterwards matches any member.
 - `blk::begin` and `blk::end` move a depth, and leaving the block forgets what
-  was declared inside it.
-- `char*::per::not(q)` asks the question of **each** character rather than of
-  the whole run. Without `per` it would compare the entire run against one
-  quote character.
+  was declared inside it. That forgetting is the whole point of a scope, so a
+  scope with no semvar bound to it is refused rather than silently doing
+  nothing.
+- `char::not(q)*` puts the counter **after** the chain, so the question is
+  asked of each character. Written `char*::not(q)` it would ask once, of the
+  whole run against a single quote.
 - `alpha-1:max` takes a bound from an [alias](alias.md), so the limit is named
   in one place.
 
