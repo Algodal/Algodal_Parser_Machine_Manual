@@ -346,5 +346,5 @@ apma mylang.apm -o mylang.apmb
 
 ```c
 ApmBinary   program = ApmReadBinaryFile("mylang.apmb", &ok);
-ApmVmResult result  = ApmVmRun(program, config);
+ApmVmResult result  = ApmVmRun(&program, config);
 ```
