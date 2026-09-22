@@ -81,12 +81,79 @@ for (uint32_t i = 0; i < result.count; i++)
 A node's value is a **span of the input**, not a copy, which is why the text
 buffer has to outlive the tree.
 
-## Several parsers at once
+## Running several parsers together
 
-Nothing about the VM is tied to one grammar, so loading a second parser program
-is the same three lines again. Two parsers can be live in one program, and in
-different threads, because what differs between them is data rather than code.
+When a grammar says `link javascript;`, its calls into that module are names
+until the two are loaded side by side. Bring them together in a **link set**:
+every binary joins it, the main one first, and a `javascript::stmt` anywhere in
+the set resolves against it.
+
+```c
+#include "apm_vm.h"
+#include "vm/link.h"
+#include "io/read_binary_file.h"
+#include "io/read_source_file.h"
+
+int main(void)
+{
+    ApmVmLink*         set;
+    ApmBinary          page, script;
+    ApmVmConfig        config;
+    ApmVmResult        result;
+    ApmAllocatedBuffer text;
+    uint32_t           length = 0, padded = 0;
+    int                ok = 0;
+
+    page   = ApmReadBinaryFile("html.apmb", &ok);
+    script = ApmReadBinaryFile("javascript.apmb", &ok);
+    text   = ApmReadSourceFile("page.html", &length, &padded);
+
+    set = ApmVmLinkCreate();
+    ApmVmLinkAddBinary(set, NULL, page);      /* index 0: the one that starts */
+    ApmVmLinkAddBinary(set, NULL, script);
+
+    config.input.ptr  = (char*)text;
+    config.input.len  = length;
+    config.padded_len = padded;
+
+    result = ApmVmRunLinked(set, config);
+
+    printf("consumed %u of %u bytes\n", result.bytes_length, length);
+
+    ApmDestroyVmResult(result);
+    ApmVmLinkDestroy(set);                    /* the set, then the binaries */
+    ApmDestroyBinary(page);
+    ApmDestroyBinary(script);
+    ApmFreeAllocatedBuffer(text);
+    return 0;
+}
+```
+
+**The first binary added is the one the run starts from.** Order matters only
+for that; the rest may be added in any order.
+
+The set does not own what it is handed, so each binary is destroyed by whoever
+loaded it, exactly as it would be without a link.
+
+Each program keeps its own stack, its own globals and its own semvar sets. They
+are run together, never merged.
+
+From the command line the same thing is:
+
+```sh
+apmr html.apmb page.html --link javascript.apmb
+```
+
+Without the link, a call into the other module reports that it was never
+resolved, rather than failing somewhere stranger.
+
+## Parsers that do not know about each other
+
+A link set is for parsers that **call** each other. Two unrelated parsers need
+none of it: load each one and run it, because nothing about the VM is tied to
+one grammar. They can be live at the same time, and in different threads, since
+what differs between them is data rather than code.
 
 :::{seealso}
-To have one parser call into another, see [Module](module.md).
+How one module calls into another is described in [Module](module.md).
 :::
