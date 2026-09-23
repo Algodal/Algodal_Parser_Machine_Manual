@@ -15,6 +15,24 @@ B = tex::oneof("ABC"); # one character: A, B or C
 C = tex::icase("ABC"); # "abc", "AbC", "ABC"
 ```
 
+## Over a variable
+
+The argument is a literal, or a **variable holding one**:
+
+```parser
+texvar word = "xml";
+semvar names = "alpha", "beta";
+
+A = tex::icase(word);    # whatever word holds, ignoring case
+B = tex::icase(names);   # any member of the set, ignoring case
+```
+
+Writing `word` on its own already matches what it holds — that is how an XML
+end tag is made to repeat its start tag. The function only says **how** to
+match it.
+
+A numvar is refused: it holds a number, and these match text.
+
 ## Chaining
 
 The calls chain, and each one narrows how the match is made:

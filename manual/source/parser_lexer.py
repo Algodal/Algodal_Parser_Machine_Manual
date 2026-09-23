@@ -43,7 +43,6 @@ class ParserLexer(RegexLexer):
         "node_id",
         "alias",
         "perm",
-        "give",
         "if",
         "node",
     )
@@ -78,6 +77,7 @@ class ParserLexer(RegexLexer):
         "char_count",
         "to_num",
         "iter_steps",
+        "until",
         "first",
         "begin",
         "end",

@@ -15,6 +15,7 @@ The above reads "one or more A to Z".
 | `*` | zero or more |
 | `?` | zero or one (optional) |
 | `-<number>` | exactly `<number>` |
+| `-<number>+` | that many **or more** |
 | `-<number>:<number>` | at least the first, at most the second |
 
 ```parser
@@ -22,6 +23,7 @@ The above reads "one or more A to Z".
 <A:Z>*;
 <A:Z>?;
 <A:Z>-5;
+<A:Z>-5+;
 <A:Z>-7:12;
 ```
 
@@ -74,21 +76,49 @@ nothing to decide. `A+ A` means "two or more A", and so does `A A+`, because
 greed runs left to right — put the fixed unit first and it takes its match
 before the counter gets greedy. The compiler does that swap for you.
 
-When the two only **overlap**, no rewrite exists, and you say so with
-`give[ ]`:
+When the two only **overlap**, no rewrite exists. Then you tell the counter
+what to stop at, and it stops there the first time rather than taking too much
+and being asked for some back.
+
+## Stopping at something
+
+Two spellings, and they differ in one thing: who owns the terminator.
 
 ```parser
-z := give[X+ B];    # X repeats, then hands one back so B can have it
-z := give[. nl];    # the skip stops short, leaving a newline for nl
+body = char*::until("-->");      # the "-->" is part of what the counter matched
+tail = (char* ^ "-->");          # the "-->" is the next unit, and its own node
 ```
 
-`give` takes exactly two units. The first must be a counter or the `.` skip —
-there is nothing else to give back. The repeated unit is parsed once; only the
-unit after it is retried, one repetition further back each time, and never past
-the counter's minimum.
+`::until(B)` reads "repeat until B, and take B too". The `^` glue — read
+**Less**, because the counter takes less than it could so the unit after it can
+have some — leaves B outside. The parentheses are required: it is two units,
+and they say where the pair ends.
+
+Both work with any counter that could stop early:
+
+```parser
+char*::until("]]>")       # none or more
+char+::until("]]>")       # at least one
+char-4+::until("]]>")     # at least four
+char-2:8::until("]]>")    # between two and eight
+```
+
+An **exact** count is refused — `char-3::until("x")` already knows how many it
+wants, so there is nothing to stop early about.
+
+This is what every `Char* - (Char* ']]>' Char*)` in a specification means: any
+characters, so long as this sequence is not among them. Written directly:
+
+```parser
+comment := ("<!--" char*::until("-->"));
+cdata   := ("<![CDATA[" char*::until("]]>"));
+```
+
+The counter asks the terminator **before** each repetition, so it stops at the
+first one, and nothing is ever matched and then given back.
 
 :::{seealso}
-Both are described with the rest of the chain in
+The counters are described with the rest of the chain in
 [Parser Result Function](parser_result_function.md). `::per` asks the rest of a
 chain of **each** repetition rather than of the whole run.
 :::

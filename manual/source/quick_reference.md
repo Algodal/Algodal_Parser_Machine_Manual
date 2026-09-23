@@ -55,6 +55,7 @@ F = \x41:5A;     # range A..Z
 <A:Z>*;      # zero or more
 <A:Z>?;      # zero or one (optional)
 <A:Z>-5;     # exactly 5
+<A:Z>-5+;    # five or more
 <A:Z>-7:12;  # between 7 and 12
 ```
 
@@ -74,14 +75,14 @@ stmt = "(" . "A" . ")";  # '.' skips per the config below
 . { spc, nl }            # required whenever '.' is used
 ```
 
-## Give — [details](counter.md)
+## Stopping a counter — [details](counter.md)
 
 ```parser
-give[X+ B]     # X repeats, then hands repetitions back until B matches
-give[. nl]     # the inbetween skip stops short, leaving a newline
+char*::until("-->")   # repeat until "-->", and take it too
+(char* ^ "-->")       # repeat until "-->", and leave it for the next unit
 ```
 
-A counter followed by its own base needs no `give` — `A+ A` is compiled as
+A counter followed by its own base needs neither — `A+ A` is compiled as
 `A A+`.
 
 ## Permutation — [details](permutation.md)
@@ -96,6 +97,7 @@ A = perm["A" "B" "C"];  # match members in any order, each once
 tex::order("ABC");   # same length, any character order
 tex::oneof("ABC");   # one character from the set
 tex::icase("ABC");   # case-insensitive exact match
+tex::icase(word);    # ...over a texvar, or a semvar's members
 ```
 
 ## Result Functions — [details](parser_result_function.md)
