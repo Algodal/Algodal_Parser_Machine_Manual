@@ -30,6 +30,35 @@ sum   := number . "+" . number;   # `.` -- "1 + 2" and "1+2" both parse
 
 That is the whole difference between a lexer rule and a grammar rule in APM.
 
+## Skipping up to something
+
+`.` takes everything the config list allows, and a line end is usually in that
+list. Sometimes you want the rest of it but not that:
+
+```parser
+line := (word (. ^ nl) word);      # skip, but stop before the line end
+line := (word .::until(nl) word);  # skip, and take the line end too
+```
+
+A counted `.` repeats **one** unit of the config list at a time, so the
+terminator gets asked before the newline is swallowed. Written on its own, `.`
+runs the whole list until none of it matches -- which is what it has always
+done, and what every other `.` in your grammar still does.
+
+The terminator does not have to be in the config list at all:
+
+```parser
+line := (word (. ^ ";") word);     # skip whitespace up to a semicolon
+```
+
+:::{important}
+`.` is already "as much as there is", so a counter written on it says the same
+thing twice and is refused: `.*`, `.+` and `.?` are errors. Write `.` on its
+own.
+:::
+
+See [Counter](counter.md) for `^` and `::until` in general.
+
 ## Where it is easy to forget
 
 Neither a counter nor a permutation skips between its repetitions or members.

@@ -68,7 +68,8 @@ numbers.
 
 ## Binding a rule to a table
 
-`feat {"bind": <table>}` in front of the definition:
+`feat {"bind": <table>}` in front of the definition -- `feat` always goes in
+front of what it configures, an action or a [semvar](variable.md):
 
 ```parser
 feat {"bind": bp} expr := atom
@@ -94,6 +95,81 @@ declares.
 A `feat` binding applies to the action itself, so **every call site** parses it
 that way. It is the right choice when the rule *is* an expression rule and
 there is no other way you would ever want it read.
+
+## The tree a bound rule makes
+
+Without a map, a bound rule wraps each fold in a node of its own and the
+operator sits beside its operands:
+
+```
+expr "2 + 3 * 4"
+├── atom "2"
+├── text "+"
+└── expr "3 * 4"
+```
+
+A map on the rule puts the **operator on top**, which is the shape every
+hand-written expression parser produces:
+
+```parser
+feat {"bind": bp} expr :=
+    ( atom
+    | 'l'expr . "+" . 'r'expr
+    | 'l'expr . "*" . 'r'expr )
+ -> ( atom
+    | "+": ('l' 'r')
+    | "*": ('l' 'r') );
+```
+
+```
+text "+"
+├── atom "2"
+└── text "*"
+    ├── atom "3"
+    └── atom "4"
+```
+
+The two labels name the operands. They are not units of the arm -- the loop
+supplies them -- which is why they are the one place a label means something
+the body does not contain.
+
+### An arm may carry more than its operator
+
+A ternary matches its middle operand inside the arm, and a subscript matches a
+whole expression between brackets. Both are ordinary units, and both keep what
+the map says about them:
+
+```parser
+bindpow post { "?" : (4, 3) ; "[" : (50, 0) ; "+" : (20, 21) ; }
+
+feat {"bind": post} e :=
+    ( num
+    | 'l'e . "+" . 'r'e
+    | 'c'e . "?" . 'q'e . ":" . 'x'e
+    | 'h'e . "[" . 'i'e . "]" )
+ -> ( num
+    | "+": ('l' 'r')
+    | "?": ('c' 'q' 'x')
+    | "[": ('h' 'i') );
+```
+
+```
+1+2?3:4                  1+2[3]
+text "?"                 text "+"
+├── text "+"             ├── num "1"
+├── e "3"                └── text "["
+└── num "4"                  ├── num "2"
+                             └── e "3"
+```
+
+A unit the map does not name makes nothing, here as everywhere -- which is what
+drops the `:` and the `]`.
+
+:::{note}
+`['l']` on an operand is wrong, and quietly so. An operand is either a plain
+unit or an earlier fold; ascend cannot tell them apart, so it would lift an
+inner fold's children out and flatten the nesting the powers just built.
+:::
 
 ## Binding at the call site
 

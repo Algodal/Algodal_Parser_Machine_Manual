@@ -33,8 +33,41 @@ foreign {
 }
 ```
 
-The actual binding happens in your program, at load time, by registering a
-function under that name.
+The actual binding happens at load time, and there are two ways to arrange it.
+
+**Linked in.** Your program hands the machine a table of names and function
+pointers, and everything is one binary:
+
+```c
+static const ApmForeignAction actions[] = {
+    { "apm_py_indent",  MyIndent  },
+    { "apm_py_dedent",  MyDedent  },
+    { "apm_py_newline", MyNewline },
+};
+
+ApmVmForeignConfig fc = { actions, 3, MyInit, MyQuit, NULL };
+cfg.foreign = &fc;
+```
+
+`init` and `quit` are optional and exist because a matcher that needs state --
+an indent stack -- has to be given somewhere to keep it. Whatever `init`
+returns becomes the `user` pointer every call receives.
+
+**Loaded.** Build the same file as a shared library and let the stock runner
+find the symbols itself:
+
+```
+apmr python.apmb file.py --plugin=python_foreign.dll
+```
+
+There is no plugin interface to implement: the `foreign` block already names a
+**symbol**, so the runner reads those names out of the parser and looks each
+one up. Two optional symbols, `apm_plugin_init` and `apm_plugin_quit`, do the
+job of `init` and `quit`. One library may own that state; a second that exports
+`apm_plugin_init` is refused rather than silently ignored.
+
+The same `.c` file serves both ways, which is what
+`assets/samples/python_foreign.c` does.
 
 ## Using one
 

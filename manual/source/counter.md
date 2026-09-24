@@ -117,6 +117,21 @@ cdata   := ("<![CDATA[" char*::until("]]>"));
 The counter asks the terminator **before** each repetition, so it stops at the
 first one, and nothing is ever matched and then given back.
 
+### The skip stops at things too
+
+`.` is the one base that arrives already repeated -- it takes every unit of the
+inbetween config there is -- so it needs no counter written on it:
+
+```parser
+line := (word (. ^ nl) word);      # skip, but stop before the line end
+line := (word .::until(nl) word);  # skip, and take the line end too
+```
+
+Under `^` or `::until` a `.` repeats **one** config unit at a time, which is
+what lets the terminator be asked before a newline is swallowed. Writing `.*`
+or `.+` says the same thing twice and is refused. See
+[Inbetween](inbetween.md).
+
 :::{seealso}
 The counters are described with the rest of the chain in
 [Parser Result Function](parser_result_function.md). `::per` asks the rest of a

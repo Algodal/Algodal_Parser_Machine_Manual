@@ -181,6 +181,31 @@ refused — a node has one parent, and a map that asked for two would have to
 copy it.
 :::
 
+## `'h'X` — what a left-recursive rule has built
+
+In a rule that calls itself on the left, the leading self-reference is **cut**
+by the machine — it has to be, or the rule would never terminate. A label on it
+names what the rule has built so far, and the parent takes it as its first
+child:
+
+```parser
+p := ('h'p . "[" . n . "]" | n) -> (node("index"): ('h' n) | n);
+```
+
+Over `1[2][3]`:
+
+```
+index
+├── index
+│   ├── n "1"
+│   └── n "2"
+└── n "3"
+```
+
+The accumulated side is always the **first** child. A map that wants it
+somewhere else is asking for a fold, and a fold is what a
+[binding power table](binding_power.md) is for.
+
 ## Renaming with `node_id`
 
 A node is named after the action that made it. `node_id` changes the name it is

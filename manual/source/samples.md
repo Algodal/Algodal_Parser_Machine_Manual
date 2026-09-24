@@ -161,7 +161,7 @@ scope blk
     end   = "}";
 
 # bound to blk, so leaving the block forgets what was declared inside it
-semvar declared {"scope": blk};
+feat {"scope": blk} semvar declared;
 
 # capture, then require the same text again
 repeat := (ident => texvar w) . "=" . (ident => w);
@@ -205,6 +205,31 @@ Worth picking out:
   whole run against a single quote.
 - `alpha-1:max` takes a bound from an [alias](alias.md), so the limit is named
   in one place.
+
+## What ships in `assets/samples`
+
+Each one is a grammar somebody can copy, and the checks compile all of them and
+parse each one's `.txt` on every build.
+
+| | |
+| :--- | :--- |
+| `json.apm` | the smallest complete language |
+| `ini.apm` | no standard exists, so it follows the three readers that matter; a line-oriented inbetween |
+| `xml.apm` | the W3C grammar, with a tree shaped by maps |
+| `yaml.apm` | indentation without a foreign body, by staying line-oriented |
+| `html.apm` | hands `<script>` bodies to `javascript.apm` with `link` |
+| `javascript.apm` | a precedence table, left recursion, and folds |
+| `c.apm` + `cpp.apm` | two linked programs: the language, and the preprocessor that is not it |
+| `python.apm` | indentation in C (`python_foreign.c`), soft keywords with a semvar |
+| `haskell.apm` | operators and layout kept to one line |
+| `decree.apm` | a small domain language, end to end |
+| `expr.apm` | left recursion and the optimizer's worst case, deliberately without precedence |
+| `expr_bindpow.apm` | the same grammar with a table: precedence, but the operator is still a sibling |
+| `expr_bindpow_astmap.apm` | and with a map: the operator becomes the parent |
+| `plain.apm`, `min.apm`, `dev.apm` | the smallest things that are still parsers |
+
+The three `expr` files read the same input, so the difference between them is
+the difference a table makes and then the difference a map makes.
 
 :::{seealso}
 [Quick Reference](quick_reference.md) has every feature on one page.

@@ -171,7 +171,7 @@ scope blk
     begin = "{";
     end   = "}";
 
-semvar kind {"scope": blk} = "int";   # bound to blk; unbound sets never forget
+feat {"scope": blk} semvar kind = "int";   # bound; an unbound set never forgets
 
 block := blk::begin item* blk::end;
 ```

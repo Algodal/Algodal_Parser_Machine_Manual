@@ -85,10 +85,14 @@ scope blk
     begin = "{";
     end   = "}";
 
-semvar kind {"scope": blk} = "int";   # bound to blk
+feat {"scope": blk} semvar kind = "int";   # bound to blk
 
 block := blk::begin . item* . blk::end;
 ```
+
+`feat { ... }` goes in **front** of the thing it configures, the same place it
+goes in front of an action that binds a precedence table. What the keys mean is
+not shared: an action reads `"bind"`, a semvar reads `"scope"`.
 
 `blk::begin` runs the begin grammar and, if it matches, goes one level deeper.
 `blk::end` comes back out and empties every set bound to `blk` of whatever was
