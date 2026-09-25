@@ -57,6 +57,7 @@ node_ident = "x";  # fine -- containing a keyword is not being one
 | `clear` | empty a set |
 | `scope` | a depth the input moves |
 | `begin` `end` | a scope's two edges |
+| `try` | read a name as though it were already declared |
 
 ## Abstract Syntax Tree
 

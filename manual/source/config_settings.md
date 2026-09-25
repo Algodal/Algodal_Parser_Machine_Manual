@@ -10,23 +10,48 @@ config {
 }
 ```
 
-Every setting has a default, and what you do not write keeps it. Values are
-`TRUE` or `FALSE`; an unknown key is an error, not a shrug.
+Every setting has a default, and what you do not write keeps it. An unknown
+key is an error, not a shrug.
+
+A setting is either a **switch**, written `TRUE` or `FALSE`, or a **size**,
+written as a number. A value of the wrong kind, or a size outside its range, is
+refused when the grammar is compiled.
 
 ## What can be set
 
-| setting | default | what it does |
-|---|---|---|
-| `ast-node-action` | `TRUE` | an action becomes a node |
-| `ast-node-text` | `TRUE` | a matched **text literal** becomes a node |
-| `ast-node-text-counter` | `TRUE` | `<literal><counter>` makes **one** node, not one per repetition |
-| `ast-node-text-series` | `TRUE` | adjacent text literals make **one** node |
-| `ast-node-char` | `FALSE` | a matched **character literal** becomes a node |
-| `ast-node-char-counter` | `FALSE` | `<char-literal><counter>` makes one node |
-| `ast-node-char-series` | `FALSE` | adjacent character literals make one node |
+| setting | kind | default | what it does |
+|---|---|---|---|
+| `ast-node-action` | switch | `TRUE` | an action becomes a node |
+| `ast-node-text` | switch | `TRUE` | a matched **text literal** becomes a node |
+| `ast-node-text-counter` | switch | `TRUE` | `<literal><counter>` makes **one** node, not one per repetition |
+| `ast-node-text-series` | switch | `TRUE` | adjacent text literals make **one** node |
+| `ast-node-char` | switch | `FALSE` | a matched **character literal** becomes a node |
+| `ast-node-char-counter` | switch | `FALSE` | `<char-literal><counter>` makes one node |
+| `ast-node-char-series` | switch | `FALSE` | adjacent character literals make one node |
+| `scope-ordered-buffer-size` | size | `64` | bytes of nesting a [positioned scope](variable.md) gets, one byte per open level. 8 to 4096 |
+| `cache-call-buffer-size` | size | `256` | slots in the run's call cache, rounded up to a power of two. 8 to 1048576 |
 
 A `-counter` or `-series` setting does nothing while the thing it counts is off,
 and turning one on while the other is off is refused rather than ignored.
+
+## The two sizes
+
+```parser
+config {
+    "scope-ordered-buffer-size" : 128,
+    "cache-call-buffer-size"    : 1024,
+}
+```
+
+Neither changes what a grammar means. `scope-ordered-buffer-size` is how deep a
+scope with [positioned brackets](variable.md) may nest before the parse fails
+saying so — one byte per open level, per ordered scope. `cache-call-buffer-size`
+is how many results the run remembers so that the same rule at the same place is
+not walked twice; more slots means fewer misses and more memory.
+
+Write them when the language asks for it: a deeply nested document needs the
+first, a large grammar over a large file the second. The defaults are right for
+everything else.
 
 ## Literals in the tree
 

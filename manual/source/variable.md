@@ -100,6 +100,58 @@ added inside. A set that is not bound to a scope never forgets.
 
 `begin` and `end` may sit in different actions, and blocks nest freely.
 
+### Several brackets, paired by position
+
+Written as a **list**, the two sides pair up position by position: whatever
+opened a level is the only thing that closes it.
+
+```parser
+scope blk
+    begin = ["{", "("];
+    end   = ["}", ")"];
+```
+
+`{ ... }` and `( ... )` both open and close a level, and `{ ... )` does not
+close at all. Written as a choice instead — `begin = "{" | "(";` — the pairing
+is gone and `{ )` closes, which is the whole difference the list makes.
+
+Two to four positions, and the two lists must be the same length. A one-item
+list is the ordinary scope written the long way, and compiles to the same
+bytes.
+
+Each open level costs one byte, so how deep a scope may nest is how many bytes
+it was given — 64 by default, and
+[`scope-ordered-buffer-size`](config_settings.md) sets it.
+
+## `try` — a name read before it is declared
+
+A semvar only matches what has already been added, which is why C has forward
+declarations. In a language where every declaration in a file is visible to
+every other, the grammar has to read a name on trust:
+
+```parser
+semvar type;
+
+decl := "type" . (ident => type) . ";";
+use  := try type [ident] . ";";
+```
+
+`try type [ident]` matches an ordinary `ident` and writes down a **promise**:
+that text will be declared into `type` before the input ends. A later
+`=> type` of the same text keeps it. What is still owed when the input runs
+out is an error, and so is a name that was declared into some other set.
+
+The bare name is the **set**. The bracketed unit is the **replacement
+matcher** — what runs in place of the set, matching exactly what it would have
+matched on its own. One of each, and only a semvar may be named.
+
+:::{warning}
+`try` **classifies, it does not restructure.** It works when both readings are
+the same tree and differ only in what the name in it is called. `T * x;` and
+`a * b;` are two different trees, and a promise cannot retract a shape that is
+already built.
+:::
+
 :::{seealso}
 Logic blocks read these values — see [Logic Block](logic_block.md) — and an
 [IF statement](if_statement.md) branches on them. `texvar`, `numvar`, `semvar`

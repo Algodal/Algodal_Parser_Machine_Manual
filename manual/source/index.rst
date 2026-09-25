@@ -54,6 +54,13 @@ Get it here: https://algodal.itch.io/algodal-parser-machine
 
 .. toctree::
    :maxdepth: 1
+   :caption: Reference
+
+   defaults
+   limits
+
+.. toctree::
+   :maxdepth: 1
    :caption: Examples
 
    samples

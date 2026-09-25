@@ -159,7 +159,12 @@ semvar name;                         # starts empty
 decl := "typedef" (ident => kind) ";";   # add what was parsed
 use  := kind;                            # match any member, longest first
 alt  := kind::first;                     # ... earliest added instead
+soon := try kind [ident] ";";            # read it before it is declared
 ```
+
+`try set [unit]` matches the bracketed unit — the **replacement matcher** — and
+promises that text will be declared into `set` before the input ends. A promise
+still owed when the input runs out is an error. One semvar, one unit.
 
 ## Scope — [details](variable.md)
 
@@ -177,6 +182,16 @@ block := blk::begin item* blk::end;
 ```
 
 `begin` and `end` may sit in different actions, and blocks nest freely.
+
+Written as **lists**, the brackets pair by position — whatever opened a level is
+the only thing that closes it, so `{ ... )` does not close. Two to four
+positions, and the two lists must be the same length:
+
+```parser
+scope blk
+    begin = ["{", "("];
+    end   = ["}", ")"];
+```
 
 ## Logic Blocks — [details](logic_block.md)
 
