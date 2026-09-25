@@ -80,6 +80,10 @@ A `scope` is a depth counter that the **input** moves. Leaving a scope forgets
 whatever was added inside it to the sets bound to that scope. Ordinary block
 scoping, in other words.
 
+At most four, the same ceiling as the sets — and it follows from them, since a
+scope exists to empty the sets bound to it and one with nothing bound is
+refused.
+
 ```parser
 scope blk
     begin = "{";
