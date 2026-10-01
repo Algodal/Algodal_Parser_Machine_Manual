@@ -42,7 +42,7 @@ link p2;
 
 parser {
     "A" . p2::value . "B";
-}
+};
 ```
 
 A linked action is always reached as `module::action`. The qualified name is
@@ -67,7 +67,7 @@ program p1;
 link p2;
 link p3;
 
-parser { p2::start . p3::start; }
+parser { p2::start . p3::start; };
 ```
 
 The `link "algodal" json;` form is sugar for `link algodaljson;`, exactly as

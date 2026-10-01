@@ -215,7 +215,7 @@ A node is named after the action that made it. `node_id` changes the name it is
 node_id {
     perm_unit: "perm",
     ident_node: "identifier",
-}
+};
 ```
 
 The reason this exists: **when the name you want is a keyword.** Every word the

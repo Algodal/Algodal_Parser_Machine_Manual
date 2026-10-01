@@ -24,7 +24,7 @@ bindpow bp {
     "*"   : (60, 61) ;
     "/"   : (60, 61) ;
     "not" : (0, 70) ;
-}
+};
 ```
 
 Higher numbers bind tighter, so `*` takes its operands before `+` gets a look.
@@ -140,7 +140,7 @@ whole expression between brackets. Both are ordinary units, and both keep what
 the map says about them:
 
 ```parser
-bindpow post { "?" : (4, 3) ; "[" : (50, 0) ; "+" : (20, 21) ; }
+bindpow post { "?" : (4, 3) ; "[" : (50, 0) ; "+" : (20, 21) ; };
 
 feat {"bind": post} e :=
     ( num
@@ -182,7 +182,7 @@ number = <0:9>+;
 bindpow bp {
     "+" : (50, 51) ;
     "*" : (60, 61) ;
-}
+};
 
 expr := number | expr . "+" . expr | expr . "*" . expr;
 

@@ -14,7 +14,7 @@ A = "cat";
 B = "dog";
 pet := A | B;
 
-parser { pet; }
+parser { pet; };
 ```
 
 Over `catdog` that gives two root nodes, a `pet` for each, with the matching
@@ -34,9 +34,9 @@ name   = <A:Z>+;
 number = <0:9>+;
 stmt  := name . number . eol;
 
-parser { stmt; }
+parser { stmt; };
 
-. { spc }
+. { spc };
 ```
 
 The rest of this page covers the core building blocks. Individual features each have their own chapter.

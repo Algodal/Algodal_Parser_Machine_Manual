@@ -19,9 +19,9 @@ number = <0:9>+;
 
 entry := (name . number) -> (name: (number));
 
-parser { . entry . ; }
+parser { . entry . ; };
 
-. { spc, nl }
+. { spc, nl };
 ```
 
 Each line becomes an `entry`, with the number placed **under** the name by the
@@ -62,7 +62,7 @@ bindpow bp {
     "*" : (60, 61) ;
     "/" : (60, 61) ;
     "^" : (71, 70) ;
-}
+};
 
 feat {"bind": bp} expr := atom
     | expr . "+" . expr
@@ -77,9 +77,9 @@ group := ("(" . expr . ")") -> (expr);
 
 assign := (name . "=" . expr) -> (name: (expr));
 
-parser { . (assign | expr) . ; }
+parser { . (assign | expr) . ; };
 
-. { spc, nl }
+. { spc, nl };
 ```
 
 Note what the map on `group` does: `-> (expr)` keeps `expr` and drops the two
@@ -127,11 +127,11 @@ foreign {
     indent:  "apm_py_indent",
     dedent:  "apm_py_dedent",
     newline: "apm_py_newline",
-}
+};
 
-parser { . block . ; }
+parser { . block . ; };
 
-. { spc }
+. { spc };
 ```
 
 ## A tour of the rest
@@ -185,9 +185,9 @@ maybe   := ident . if (num) ["!" | "?"];
 
 body    := blk::begin . (declare | use | repeat)* . blk::end;
 
-parser { . (body | short | field | quoted | attrs | maybe) . ; }
+parser { . (body | short | field | quoted | attrs | maybe) . ; };
 
-. { spc, nl }
+. { spc, nl };
 ```
 
 Worth picking out:

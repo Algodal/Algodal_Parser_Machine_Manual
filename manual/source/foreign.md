@@ -30,7 +30,7 @@ foreign {
     indent:  "apm_py_indent",
     dedent:  "apm_py_dedent",
     newline: "apm_py_newline",
-}
+};
 ```
 
 The actual binding happens at load time, and there are two ways to arrange it.

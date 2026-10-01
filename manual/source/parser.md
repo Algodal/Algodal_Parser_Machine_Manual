@@ -14,7 +14,7 @@ The parser block names the **start grammar** — the single grammar the parser b
 ```parser
 parser {
     main_grammar;   # the single start grammar (a syntac/charseq action, an option, a series, or any unit)
-}
+};
 ```
 
 The start grammar can be a **named action**:
@@ -22,7 +22,7 @@ The start grammar can be a **named action**:
 ```parser
 parser {
     my_action;
-}
+};
 ```
 
 an **option**:
@@ -30,7 +30,7 @@ an **option**:
 ```parser
 parser {
     "A" | "B" | "C";
-}
+};
 ```
 
 any single **unit**:
@@ -38,7 +38,7 @@ any single **unit**:
 ```parser
 parser {
     "A";
-}
+};
 ```
 
 or a **series**:
@@ -46,7 +46,7 @@ or a **series**:
 ```parser
 parser {
     "A" "B" "C" "D";
-}
+};
 ```
 
 ## Repetition is the loop; separators are `.`
@@ -56,7 +56,7 @@ Because the parser re-runs the start grammar over what remains, a grammar of adj
 ```parser
 parser {
     item;   # the loop repeats it: item item item ...
-}
+};
 ```
 
 The loop does **not** skip anything between runs. Inbetween is the `.` building block — it runs the configured skip only where `.` appears in the grammar. So when items are separated (e.g. by spaces), put `.` where the separator goes:
@@ -64,6 +64,6 @@ The loop does **not** skip anything between runs. Inbetween is the `.` building 
 ```parser
 parser {
     item (. item)*;   # items separated by the inbetween
-}
-. { spc }
+};
+. { spc };
 ```

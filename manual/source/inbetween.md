@@ -9,7 +9,7 @@ stmt = "(" . "A" . ")";
 
 . {
     spc, nl
-}
+};
 ```
 
 At every `.`, everything in the config list is matched repeatedly until none of

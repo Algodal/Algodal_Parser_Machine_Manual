@@ -72,7 +72,7 @@ eof;   # end of input (matches zero width)
 
 ```parser
 stmt = "(" . "A" . ")";  # '.' skips per the config below
-. { spc, nl }            # required whenever '.' is used
+. { spc, nl };           # required whenever '.' is used
 ```
 
 ## Stopping a counter — [details](counter.md)
@@ -269,7 +269,7 @@ default and what you do not write keeps it.
 config {
     "ast-node-text" : FALSE,     # literals stop being nodes
     "ast-node-char" : TRUE,      # char literals start being nodes
-}
+};
 ```
 
 | setting | default |
@@ -291,11 +291,11 @@ config.
 ```parser
 parser {
     main_grammar;   # the single start grammar; the loop re-runs it over what remains
-}
-parser { A | B | C; }       # an option
-parser { A B C; }           # a series
-parser { item; }            # the loop walks adjacent items
-parser { item (. item)*; }  # items separated by the inbetween (`.`)
+};
+parser { A | B | C; };       # an option
+parser { A B C; };           # a series
+parser { item; };            # the loop walks adjacent items
+parser { item (. item)*; };  # items separated by the inbetween (`.`)
 ```
 
 ## Node IDs — [details](abstract_syntax_tree.md)
@@ -303,7 +303,7 @@ parser { item (. item)*; }  # items separated by the inbetween (`.`)
 ```parser
 node_id {
     Label: "saved name",    # what an action is saved as in the AST
-}
+};
 ```
 
 ## Linking — [details](module.md)
@@ -321,7 +321,7 @@ bindpow bp {
     "+" : (50, 51) ;        # r = l + 1  -> left-associative
     "^" : (11, 10) ;        # r = l - 1  -> right-associative
     "not" : (0, 70) ;       # (0, r) prefix; (l, 0) postfix
-}
+};
 
 feat {"bind": bp} expr := atom | expr . "+" . expr | "not" . expr;
 ```
@@ -330,7 +330,7 @@ feat {"bind": bp} expr := atom | expr . "+" . expr | "not" . expr;
 
 ```parser
 indent = _;                        # body lives in your C code
-foreign { indent: "apm_py_indent" }
+foreign { indent: "apm_py_indent" };
 ```
 
 ## AST Maps — [details](abstract_syntax_tree.md)

@@ -7,7 +7,7 @@ the top level, with a setting per line:
 config {
     "ast-node-text" : FALSE,
     "ast-node-char" : TRUE,
-}
+};
 ```
 
 Every setting has a default, and what you do not write keeps it. An unknown
@@ -40,7 +40,7 @@ and turning one on while the other is off is refused rather than ignored.
 config {
     "scope-ordered-buffer-size" : 128,
     "cache-call-buffer-size"    : 1024,
-}
+};
 ```
 
 Neither changes what a grammar means. `scope-ordered-buffer-size` is how deep a
@@ -76,7 +76,7 @@ grammar would be the wrong label in both cases.
 Turn it off and the literal matches and consumes exactly as before, silently:
 
 ```parser
-config { "ast-node-text" : FALSE }
+config { "ast-node-text" : FALSE };
 ```
 
 ## One node, not many
@@ -109,7 +109,7 @@ Turn everything off and nothing is built. The parse still says what it matched
 and how far it got, which is all a recogniser needs:
 
 ```parser
-config { "ast-node-action" : FALSE, "ast-node-text" : FALSE }
+config { "ast-node-action" : FALSE, "ast-node-text" : FALSE };
 ```
 
 With actions off but literals on, the levels go and the literals stay.
