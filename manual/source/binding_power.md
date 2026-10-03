@@ -29,6 +29,32 @@ bindpow bp {
 
 Higher numbers bind tighter, so `*` takes its operands before `+` gets a look.
 
+### What a key may be
+
+A key names **one** operator, so it has to be exactly one text — a
+[static](language.md) unit. A string is the usual spelling, and
+these work as well:
+
+```parser
+plus = "+";
+
+bindpow bp {
+    \x2D      : (50, 51) ;   # a character literal: "-"
+    <*>       : (60, 61) ;   # a one-member block
+    plus      : (50, 51) ;   # an action that is only a literal
+    "<" "="   : (40, 41) ;   # several side by side: "<="
+};
+```
+
+Keys are compared by what they **spell**, so `"+"`, `\x2B` and `<+>` are the
+same operator — and giving one operator two powers of the same kind is an
+error however it is spelled. A block of several characters (`<+->`) or anything
+decided while parsing is not a key (`E-bindpow-key`).
+
+The rule's side is read the same way. An arm's operator is its **first run of
+static units**, so `expr . "<" "=" . expr` meets the key `"<="`, and an arm
+that calls `plus` meets the key `"+"`.
+
 ## Associativity is the gap, not a keyword
 
 There is no `left` or `right` to write. The relationship between an operator's

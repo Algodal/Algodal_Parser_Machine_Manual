@@ -60,7 +60,7 @@ A `semvar` is a set of text that the parse **adds to** and later matches
 against. It is what a semantic predicate needs and a plain variable cannot
 give: a grammar that knows which identifiers have been declared.
 
-Sets are global, and there are at most four of them.
+Sets are global, and there are at most sixteen of them.
 
 ```parser
 semvar kind = "int", "short";   # with members from the start
@@ -80,9 +80,7 @@ A `scope` is a depth counter that the **input** moves. Leaving a scope forgets
 whatever was added inside it to the sets bound to that scope. Ordinary block
 scoping, in other words.
 
-At most four, the same ceiling as the sets — and it follows from them, since a
-scope exists to empty the sets bound to it and one with nothing bound is
-refused.
+At most sixteen, the same ceiling as the sets.
 
 ```parser
 scope blk
@@ -104,6 +102,32 @@ added inside. A set that is not bound to a scope never forgets.
 
 `begin` and `end` may sit in different actions, and blocks nest freely.
 
+A `begin` or `end` value is grammar like any other: it may name an action, and
+that action counts as used.
+
+### A scope on its own
+
+A scope needs no set. Without one it is still a depth counter, and a
+positioned one still pairs its
+brackets — which is sometimes all a grammar wants. One rule for a quoted
+string, instead of one alternative per quote:
+
+```parser
+scope q
+    begin = ["'", "\""];
+    end   = ["'", "\""];
+
+content = char::not(<'">)*;
+str := q::begin content q::end;      # 'ab' and "ab", never 'ab"
+```
+
+What a scope does need is to be **used**. A scope that no `name::begin` or
+`name::end` mentions is warned about (`W-unused-scope`). One of the two is
+enough, because the other may be written in a grammar that
+[links](module.md) this one. A scope left unused here on purpose says so with
+`feat {"unused-ignore": TRUE}` — see
+[Unused on purpose](language.md).
+
 ### Several brackets, paired by position
 
 Written as a **list**, the two sides pair up position by position: whatever
@@ -119,9 +143,32 @@ scope blk
 close at all. Written as a choice instead — `begin = "{" | "(";` — the pairing
 is gone and `{ )` closes, which is the whole difference the list makes.
 
-Two to four positions, and the two lists must be the same length. A one-item
+Two to seven positions, and the two lists must be the same length. A one-item
 list is the ordinary scope written the long way, and compiles to the same
 bytes.
+
+**The longest opener is tried first.** `begin` takes the first opener that
+matches, and the compiler puts them longest-first, whatever order they were
+written in — so `["<", "<<"]` opens with `<<` when the input has it. Each
+closer moves with its opener, so the pairing the list wrote is kept.
+
+For that to be possible, the openers of a positioned scope have to be
+[static or known](language.md) — strings, character literals,
+character blocks, or actions made only of those. One decided while parsing is
+an error (`E-scope-opener`). So are two openers of the same length that can
+match the same text, like `"q"` and `<a:z>`, because no order tells them apart
+(`E-scope-overlap`).
+
+Only `begin` is held to this. `end` never chooses — it runs the closer of
+whatever opened the level — and a scope with **one** position has nothing to
+choose between, so its `begin` and `end` may be anything, a
+[foreign](foreign.md) function included:
+
+```parser
+indent = _;
+dedent = _;
+scope pyblk begin = indent; end = dedent;
+```
 
 Each open level costs one byte, so how deep a scope may nest is how many bytes
 it was given — 64 by default, and

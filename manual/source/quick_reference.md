@@ -181,11 +181,14 @@ feat {"scope": blk} semvar kind = "int";   # bound; an unbound set never forgets
 block := blk::begin item* blk::end;
 ```
 
-`begin` and `end` may sit in different actions, and blocks nest freely.
+`begin` and `end` may sit in different actions, and blocks nest freely. A scope
+needs no set — on its own it still counts depth and pairs its brackets — but
+one nothing enters or leaves is warned about.
 
 Written as **lists**, the brackets pair by position — whatever opened a level is
-the only thing that closes it, so `{ ... )` does not close. Two to four
-positions, and the two lists must be the same length:
+the only thing that closes it, so `{ ... )` does not close. Two to seven
+positions, and the two lists must be the same length. The longest opener is
+tried first, so openers are static or known and must not match the same text:
 
 ```parser
 scope blk
@@ -260,6 +263,12 @@ are keyed, so order never matters; a key the feature does not read is an error.
 { "key" : value , ... }     # value is a label, a number or a string
 ```
 
+| in front of | keys |
+|---|---|
+| an action | `"bind"` (a bindpow), `"unused-ignore"` (TRUE: unused here on purpose) |
+| a semvar | `"scope"` (the scope that empties it) |
+| a scope | `"unused-ignore"` |
+
 ## Config — [details](config_settings.md)
 
 What the grammar asks the machine to build. Optional; every setting has a
@@ -325,6 +334,9 @@ bindpow bp {
 
 feat {"bind": bp} expr := atom | expr . "+" . expr | "not" . expr;
 ```
+
+A key is any static unit — `"+"`, `\x2B`, `<+>`, an action that is only a
+literal, or `"<" "="` — and keys are compared by what they spell.
 
 ## Foreign Bodiess — [details](foreign.md)
 

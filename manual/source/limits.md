@@ -10,7 +10,7 @@ the small ones are small on purpose, and say so.
 | actions in one program | 65,535 |
 | semvar sets | 16 |
 | scopes | 16 |
-| positions in one scope | 4 |
+| positions in one scope | 7 |
 | arms in one binding-power table | 64 |
 | items in one character class | 65,535 |
 | programs linked into one run | 64 |
@@ -19,11 +19,11 @@ Sixteen semvar sets is a ceiling, not an oversight: a set is a global thing a
 whole grammar shares, and a grammar that wants a seventeenth usually wants a
 [scope](variable.md) instead.
 
-Sixteen scopes for the same reason, and it follows from the sets. A scope is a
-depth counter, and what a depth counter is *for* is emptying the sets bound to
-it — a scope with nothing bound to it is refused. So a seventeenth scope could
-only ever govern a set one of the first sixteen already governs. Declaring one
-is an error, not a silent truncation.
+Sixteen scopes, the same as the sets: more kinds of bracket than any language
+nests. Declaring a seventeenth is an error, not a silent truncation.
+
+Seven positions in one scope because that is what its three count bits hold —
+every count the field can store is a legal scope, and none is wasted.
 
 ## The run
 

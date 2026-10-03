@@ -77,6 +77,22 @@ cat     = "cat";
 animal := dog cat;
 ```
 
+### Unused on purpose
+
+An action nothing calls is warned about (`W-unused`). Sometimes that is the
+point: a grammar that is [linked](module.md) by another one defines actions for
+*that* grammar to call, and in its own file they are never used. Say so in
+front of the definition, and the warning goes away:
+
+```parser
+feat {"unused-ignore": TRUE} directive := "#" . ident . line;
+```
+
+The same key works on a [scope](variable.md). Marking
+something that **is** used is warned about too (`W-unused-ignore-used`) — the
+mark says one thing and the grammar another, so one of them is out of date.
+The value is a switch, `TRUE` or `FALSE`.
+
 ## Series and Options
 
 An action body is made of *series* and *options*.
@@ -171,6 +187,40 @@ For anything above 127, `\u` is the safer way to say it: give the code point
 and let the compiler write the bytes.
 :::
 
+## Escapes
+
+Inside a string-literal and inside a [character block](character.md), a
+backslash starts an **escape**:
+
+| escape | means |
+| :--- | :--- |
+| `\n` `\r` `\t` | newline, carriage return, tab |
+| `\\` `\'` `\"` `\?` | the character itself |
+| `\xHH..\e` | one character, by its UTF-8 bytes |
+| `\uHHHH..\e` | one character, by its code point |
+
+**Every keyboard symbol escapes to itself**, so a reader need not remember
+which ones are special:
+
+```
+\` \~ \! \@ \# \$ \% \^ \& \* \( \) \- \_ \= \+
+\[ \] \{ \} \| \; \: \, \. \< \> \/
+```
+
+```parser
+open  = "\[";        # the same as "["
+gt    = <\>>;        # a block holding ">" -- the easy way to get one in
+```
+
+**Letters and digits are reserved.** `\q` or `\5` is an error, not the
+character, so that a later version can give one a meaning without changing
+what an existing grammar says. A space and any non-ASCII character are not
+escapes either.
+
+The `\e` ends a code, and inside a literal it is required: the digits are
+greedy, so `"\x41\eBC"` is `ABC` while `"\x41BC"` is an error — it would
+otherwise read `41BC` as one code.
+
 ## Char-Range
 
 A **char-range** parses a single character out of a span of codes. It is
@@ -188,6 +238,41 @@ times something runs, a char-range's says which characters are allowed.
 
 The same `:` sections a result in
 [`::part(1:4)`](parser_result_function.md).
+
+## Kinds of unit
+
+A **unit** is one step of a grammar: what a series is
+a run of. The words below come up wherever the manual says what may go where.
+
+| term | what it is |
+| :--- | :--- |
+| **string-literal** | text in quotes: `"cat"` |
+| **char-literal** | a character by code: `\x41`, a chain `\x43,41,54`, a range `\x41:5A` |
+| **char-block** | one character from a set: `<A:Z_>` |
+| **group unit** | a grammar in parentheses: `("a" \| "b")` |
+| **action unit** | the name of an action, which runs its body |
+| **entry unit** | one entry of a list a declaration holds — a [scope](variable.md)'s opener, a [bindpow](binding_power.md) key |
+| **trailing unit** | the terminator of [`::until` and `^`](counter.md) |
+
+Every unit is also one of three **kinds**, by how much the grammar alone can
+say about what it matches:
+
+| kind | known when | matches | examples |
+| :--- | :--- | :--- | :--- |
+| **static** | the grammar compiles | exactly one text | `"<="`, `\x2B`, `<+>`, `"<" "="`, an action whose body is static |
+| **known** | the grammar compiles | a fixed number of characters, each from a set | `<[{(>`, `tex::oneof("ab")`, `tex::icase("if")`, `<ab> "x"` |
+| **dynamic** | the input is read | anything else | `"a" \| "bb"`, `"a"+`, `"a" . "b"`, `char`, `nl`, a variable, a foreign `_` |
+
+A series of statics is static: `"<" "="` spells `<=`. A series with a `.` in
+it is dynamic, because the skip decides how much lies between.
+
+Where the kind matters:
+
+- a [bindpow](binding_power.md) key must be **static** — it names one operator;
+- a [positioned scope](variable.md)'s
+  openers must be **static or known** — they are told apart by length and by
+  what they match;
+- a trailing unit may be **any** kind — it is simply run at each step.
 
 ## Reserved Words
 
