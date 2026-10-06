@@ -78,6 +78,12 @@ If `.` appears anywhere in your grammar you **must** define the `.` config
 block. There is no default skip set.
 :::
 
+A scope edge may be skipped as well — `. { spc, blk::begin, blk::end };` — when
+what the scope matches is fixed: one text, or a fixed-length set like `<([>`. A
+scope whose value is decided while parsing (`<a:z>+`, or a list of positions)
+is refused there (`E-inbetween-scope`): the skip runs at every `.`, and it
+should not open or close something the reader cannot see.
+
 :::{seealso}
 [Built-in Actions](builtin_action.md) are what usually fill the block. See
 [Samples](samples.md) for `.` in a complete parser.
