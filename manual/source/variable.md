@@ -105,6 +105,13 @@ added inside. A set that is not bound to a scope never forgets.
 A `begin` or `end` value is grammar like any other: it may name an action, and
 that action counts as used.
 
+`blk::begin` and `blk::end` go **anywhere an action goes** — inside a counter,
+a choice, a permutation, a result function, and as a
+[binding power](binding_power.md) key when the scope's value is one fixed text.
+The [skip](inbetween.md) is the one place with a condition: there the value has
+to be static or known, because the skip runs at every `.` and what it opens or
+closes should be something a reader of the grammar can see.
+
 ### A scope on its own
 
 A scope needs no set. Without one it is still a depth counter, and a
