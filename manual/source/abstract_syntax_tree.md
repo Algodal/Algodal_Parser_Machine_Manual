@@ -105,7 +105,24 @@ An ascended node keeps the **position** it had among its siblings; only the
 level goes. This is how you flatten one wrapper that the grammar needed but the
 tree does not.
 
-`[A]` cannot be a parent — there would be no `A` left to hang anything on.
+### `[A]` as a parent
+
+`[A]: (X)` lifts `A`'s children as above, and `X` hangs under the **last** of
+them — the same rule a repeated name follows, where the children go to the last
+one. Given `P := A . B;`:
+
+```parser
+X := (P . C) -> ([P]: (C));   # (X (A) (B (C)))        C under the last thing P held
+```
+
+If `A` held **nothing**, there is nothing for `X` to hang on, so `X` ascends
+with it: it lands where `A` would have gone, beside `A`'s siblings. That is the
+natural shape for a header that is a charseq:
+
+```parser
+Section := (SectionHeader LineBreak (SectionItem)*)
+        -> ([SectionHeader]: ([SectionItem]));
+```
 
 ## `node("Name")` — a node nothing matched
 
