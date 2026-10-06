@@ -217,9 +217,11 @@ character, so that a later version can give one a meaning without changing
 what an existing grammar says. A space and any non-ASCII character are not
 escapes either.
 
-The `\e` ends a code, and inside a literal it is required: the digits are
-greedy, so `"\x41\eBC"` is `ABC` while `"\x41BC"` is an error — it would
-otherwise read `41BC` as one code.
+The `\e` ends a code, and inside a string or a character block it is
+required: the digits are greedy, so `"\x41\eBC"` is `ABC` while `"\x41BC"` is
+an error — it would otherwise read `41BC` as one code. The same goes for
+`<\x09\e >`, a tab or a space. A character literal written on its own needs
+none: `\x41` ends where the grammar around it says it does.
 
 ## Char-Range
 

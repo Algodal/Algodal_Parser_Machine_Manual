@@ -24,7 +24,7 @@ together, with no separator between them:
 A = <A:Z>;       # one character, A through Z
 B = <aeiou>;     # one vowel
 C = <A:Za:z_>;   # a letter or an underscore -- two ranges and a character
-D = <\x41:5A>;   # the same as <A:Z>, written in hex
+D = <\x41\e:\x5A\e>;   # the same as <A:Z>, written in hex
 ```
 
 :::{important}
@@ -53,10 +53,11 @@ E = \x41:5A; # parses from A to Z | range is also supported
 ```
 
 Character literals can also be used inside of blocks, which is how an awkward
-character gets into a set:
+character gets into a set. Inside a block a code is ended with `\e`, as it is
+in a string — the hex digits are greedy, and the `\e` says where they stop:
 
 ```parser
-F = <\x09 >; # a tab or a space
+F = <\x09\e >; # a tab or a space
 ```
 
 :::{seealso}
