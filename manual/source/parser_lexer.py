@@ -41,6 +41,7 @@ class ParserLexer(RegexLexer):
         "bindpow",
         "foreign",
         "node_id",
+        "root_node",
         "alias",
         "perm",
         "if",

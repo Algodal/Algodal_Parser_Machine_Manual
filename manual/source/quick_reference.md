@@ -315,6 +315,14 @@ node_id {
 };
 ```
 
+## Side roots — [details](abstract_syntax_tree.md)
+
+```parser
+root_node comments;                              # declare one
+A := (B . C . D) -> (B D) >> comments:(C);       # C goes to the root
+N := (H . T) >> comments;                        # everything N makes goes
+```
+
 ## Linking — [details](module.md)
 
 ```parser

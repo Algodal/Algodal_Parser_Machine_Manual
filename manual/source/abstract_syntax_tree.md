@@ -223,6 +223,49 @@ The accumulated side is always the **first** child. A map that wants it
 somewhere else is asking for a fold, and a fold is what a
 [binding power table](binding_power.md) is for.
 
+## Side roots — `root_node` and `>>`
+
+Some nodes belong to the whole parse rather than to the place they matched:
+comments a formatter has to keep, declarations a symbol table wants together. A
+**side root** collects them.
+
+```parser
+root_node comments;
+```
+
+declares one. An action sends nodes to it with `>>`, after its map if it has
+one:
+
+```parser
+item := (stmt . comment?) >> comments:(comment);   # comment goes to the root
+note := (hash . text)     >> comments;             # everything note makes goes
+```
+
+- `>> root:(...)` sends what it names. It is a map of its own, read against the
+  same body: anything it names leaves the tree, and what the map hangs under
+  that stays under it. Without a `->`, everything it does not name stays where
+  it would have been.
+- `>> root` with no map sends **everything** the body makes. The action itself
+  stays where it was, with no children — so it stands alone: a `->` or another
+  `>>` beside it is an error (`E-root-map`).
+- One unit goes to one place — the tree or one root — never two
+  (`E-astmap-twice`).
+
+The result holds each root that got anything as a node of its own after the
+parse's roots, in the order the roots were declared, with its nodes in the
+order they appear in the input:
+
+```
+item  ...
+comments
+├── comment "# first"
+└── comment "# second"
+```
+
+A node is only sent once its attempt **succeeds**. An alternative that matched
+a comment and then failed sends nothing, exactly as its nodes never reach the
+tree.
+
 ## Renaming with `node_id`
 
 A node is named after the action that made it. `node_id` changes the name it is

@@ -65,6 +65,7 @@ node_ident = "x";  # fine -- containing a keyword is not being one
 | :--- | :--- |
 | `node` | a node nothing matched |
 | `node_id` | rename what an action is saved as |
+| `root_node` | declare a side root that nodes can be sent to |
 
 ## Text Functions
 
