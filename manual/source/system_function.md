@@ -16,7 +16,9 @@ z := (word => texvar x) . {x == "cat" OR error("only cats here")};
 
 It travels straight out of options, series, counters, permutations and `if`
 conditions rather than being retried around. The run ends, and the message
-becomes the run's error.
+becomes the run's error — even when the run was asked to carry on past errors
+(see [How to Use](how_to_use.md)): that recovers from input the grammar could
+not read, and `error()` is the grammar saying it read it and it is wrong.
 
 Because `OR` short-circuits, the example above says nothing at all for a cat
 and stops for a dog.

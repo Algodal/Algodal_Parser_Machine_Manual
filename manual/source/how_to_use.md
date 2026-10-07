@@ -82,6 +82,52 @@ for (uint32_t i = 0; i < result.count; i++)
 A node's value is a **span of the input**, not a copy, which is why the text
 buffer has to outlive the tree.
 
+## Carrying on past errors
+
+By default a run stops at the first place the grammar cannot go on, and
+`result.bytes_length` says how far it got. Turn **recovery** on and it carries
+on instead:
+
+```c
+ApmVmRecover recover = { "error", 0 };   /* the error nodes' name; 0 = no limit */
+
+config.recover = &recover;
+result = ApmVmRun(&program, config);
+
+printf("%u errors\n", result.error_count);
+for (uint32_t i = 0; i < result.count; i++)
+    if (ApmIsNodeError(result.nodes[i]))
+    {
+        ApmNode* bad = result.nodes[i];
+        printf("could not parse bytes %u to %u\n",
+               bad->block.idx, bad->block.idx + bad->block.len);
+    }
+```
+
+A run repeats the start rule over the input, one root at a time. With recovery
+on, a root that does not match is where an **error node** starts: the run steps
+forward one character at a time until the start rule matches again, and what it
+stepped over becomes a root of its own, between the good ones. If nothing
+matches again, the error node runs to the end of the input.
+
+- An error node has the name you gave (`"error"` when the name is NULL), no
+  children, and the skipped text as its value.
+- `result.errors[i]` says, for each one, where its run started and ended and
+  how far it got before failing — `reach` and its expectations, the same as
+  `result.reach` says for a plain run that stops.
+- Nothing is reset between roots: a name declared before an error is still
+  known after it.
+- `error("...")` still ends the run. It is a verdict on the input, not a
+  mistake to step over.
+
+How much an error swallows depends on the start rule. One that reads a line, or
+one statement, resumes at the next line or statement; one that reads the whole
+document resumes only where something whole-document-shaped could start again.
+A start rule that can match one word anywhere resumes almost at once — correct
+by the rule, and worth knowing when you write one.
+
+From the command line, `apmr --recover` does the same.
+
 ## Running several parsers together
 
 When a grammar says `link javascript;`, its calls into that module are names
