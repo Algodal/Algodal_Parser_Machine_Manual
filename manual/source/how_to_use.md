@@ -128,6 +128,15 @@ by the rule, and worth knowing when you write one.
 
 From the command line, `apmr --recover` does the same.
 
+:::{note}
+APM parses a text **from the start, every time**. There is no targeted
+re-parse — no picking up a previous tree and re-reading only what an edit
+touched — and none is planned. Recovery is for reading past mistakes in one
+run, not for editing a tree in place; to see an edit, run the parser again.
+Keeping that one-shot run as fast as a handwritten parser is the work APM is
+pursuing instead.
+:::
+
 ## Running several parsers together
 
 When a grammar says `link javascript;`, its calls into that module are names
