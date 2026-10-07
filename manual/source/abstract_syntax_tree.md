@@ -147,6 +147,31 @@ anywhere invents text. Without it you get a node with a name and no value.
 Because the node is emitted at the end of the body, a variable it reads has
 already been written by the time it runs.
 
+### `node("Name", C)` — renaming what a unit made
+
+When the second argument is a **unit of the body** rather than a variable, no
+new node is made: the node C made is the one placed, **renamed**. It keeps its
+span and its children, and goes where the `node()` stands.
+
+```parser
+Section := (SectionHeader LineBreak (SectionItem)*)
+        -> (node("SectionH", SectionHeader): ([SectionItem]));
+```
+
+Every section comes out as a `SectionH` holding its header's text, with the
+items under it. As a parent, the renamed node keeps the children it already
+had, and what the map hangs under it follows them.
+
+- Anything a map can name can be renamed: a rule, a label, a literal, a
+  character block, a linked call.
+- If C did not match — it sits in an alternative that was not taken — nothing
+  is placed.
+- A plain name must be one or the other: a name that is both a unit of the
+  body and a variable is refused (`E-astmap-node-both`), and so is one that is
+  neither (`E-astmap-undef`).
+- `node("Name", [C])` is not accepted. Renaming the root of what C made is
+  already what `node("Name", C)` does.
+
 ## Everything is reachable
 
 A map names a maker the way it is **written**. An action by its name, a literal
